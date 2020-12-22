@@ -11,7 +11,7 @@ import sys
 from network import weights_init,NetED, Discriminator,calc_gradient_penalty
 from prepareTemplates import getTemplates,getImage
 
-from config import opt,bMirror,nz,nDep,criterion
+from config import opt,bMirror,nz,nDepG,criterion
 from splitInference import splitW
 import time
 
@@ -22,25 +22,25 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 cudnn.benchmark = True
 
-canonicT=[transforms.RandomCrop(opt.imageSize),transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+canonicT=[transforms.RandomCrop(opt.image_size),transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 mirrorT= []
 if bMirror:
     mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
 transformTex=transforms.Compose(mirrorT+canonicT)
-dataset = TextureDataset(opt.texturePath,transformTex,opt.textureScale)
+dataset = TextureDataset(opt.texture_path,transformTex,opt.texture_scale)
 transformCon=transforms.Compose(canonicT)
-cdataset = TextureDataset(opt.contentPath,transformCon,opt.contentScale)
+cdataset = TextureDataset(opt.content_path,transformCon,opt.content_scale)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size,
                                          shuffle=True, num_workers=int(opt.workers))
-cdataloader = torch.utils.data.DataLoader(cdataset, batch_size=opt.batchSize,
+cdataloader = torch.utils.data.DataLoader(cdataset, batch_size=opt.batch_size,
                                          shuffle=True, num_workers=int(opt.workers))
 
 N=0
 ngf = int(opt.ngf)
 ndf = int(opt.ndf)
 
-desc="fc"+str(opt.fContent)+"_ngf"+str(ngf)+"_ndf"+str(ndf)+"_dep"+str(nDep)+"-"+str(opt.nDepD)
+desc="fc"+str(opt.fContent)+"_ngf"+str(ngf)+"_ndf"+str(ndf)+"_dep"+str(nDepG)+"-"+str(opt.nDepD)
 
 if opt.WGAN:
     desc +='_WGAN'
@@ -48,17 +48,17 @@ if opt.LS:
         desc += '_LS'
 if bMirror:
     desc += '_mirror'
-if opt.contentScale !=1 or opt.textureScale !=1:
-    desc +="_scale"+str(opt.contentScale)+";"+str(opt.textureScale)
+if opt.content_scale !=1 or opt.texture_scale !=1:
+    desc +="_scale"+str(opt.content_scale)+";"+str(opt.texture_scale)
 desc += '_cLoss'+str(opt.cLoss)
 
 targetMosaic=getTemplates(opt,N)
-fixnoise = torch.FloatTensor(1, nz, targetMosaic.shape[2]//2**nDep,targetMosaic.shape[3]//2**nDep)
+fixnoise = torch.FloatTensor(1, nz, targetMosaic.shape[2]//2**nDepG,targetMosaic.shape[3]//2**nDepG)
 print("fixed variables",fixnoise.data.shape,targetMosaic.data.shape) 
 netD = Discriminator(ndf, opt.nDepD, bSigm=not opt.LS and not opt.WGAN)
 
 ##################################
-netMix =NetED(ngf, nDep, nz, nc=3, ncIn=3, bTanh=True, Ubottleneck=opt.zGL)
+netMix =NetED(ngf, nDepG, nz, nc=3, ncIn=3, bTanh=True, Ubottleneck=opt.zGL)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ("device",device)
 
@@ -84,8 +84,8 @@ for net in [netD] + Gnets:
     net=net.to(device)
     print(net)
 
-NZ = opt.imageSize//2**nDep
-noise = torch.FloatTensor(opt.batchSize, nz, NZ,NZ)
+NZ = opt.image_size//2**nDepG
+noise = torch.FloatTensor(opt.batch_size, nz, NZ,NZ)
 
 real_label = 1
 fake_label = 0
@@ -169,14 +169,14 @@ for epoch in range(opt.niter):
         ### RUN INFERENCE AND SAVE LARGE OUTPUT MOSAICS
         if i % 100 == 0:
             a=np.array(buf)
-            plotStats(a,opt.outputFolder+desc)
-            vutils.save_image(text,    '%s/real_textures.jpg' % opt.outputFolder,  normalize=True)
-            vutils.save_image(torch.cat([content,fake,fake2],2),'%s/mosaic_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch,desc),normalize=True)
+            plotStats(a,opt.output_folder+desc)
+            vutils.save_image(text,    '%s/real_textures.jpg' % opt.output_folder,  normalize=True)
+            vutils.save_image(torch.cat([content,fake,fake2],2),'%s/mosaic_epoch_%03d_%s.jpg' % (opt.output_folder, epoch,desc),normalize=True)
 
             fixnoise=setNoise(fixnoise)
             fixnoise[:,:opt.zGL]=netMix.e(targetMosaic)
 
-            vutils.save_image(fixnoise.view(-1,1,fixnoise.shape[2],fixnoise.shape[3]), '%s/noiseBig_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch, desc),normalize=True)
+            vutils.save_image(fixnoise.view(-1,1,fixnoise.shape[2],fixnoise.shape[3]), '%s/noiseBig_epoch_%03d_%s.jpg' % (opt.output_folder, epoch, desc),normalize=True)
 
             netMix.eval()
             with torch.no_grad():
@@ -185,26 +185,26 @@ for epoch in range(opt.niter):
                 else:
                     fakebig,_,_,_ = splitW(targetMosaic, fixnoise, None, ganGeneration)
 
-            vutils.save_image(fakebig,'%s/mosaicBig_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch,desc),normalize=True)
+            vutils.save_image(fakebig,'%s/mosaicBig_epoch_%03d_%s.jpg' % (opt.output_folder, epoch,desc),normalize=True)
 
 
             ##RUN OUT-OF-SAMPLE
             with torch.no_grad():
                 try:
-                    im=getImage(opt.testImage, bDel=True)
+                    im=getImage(opt.test_image, bDel=True)
                     im = im.to(device)
                     print("test image size", im.shape)
-                    fixnoise2 = torch.FloatTensor(1, nz, im.shape[2] // 2 ** nDep, im.shape[3] // 2 ** nDep)
+                    fixnoise2 = torch.FloatTensor(1, nz, im.shape[2] // 2 ** nDepG, im.shape[3] // 2 ** nDepG)
                     fixnoise2 = fixnoise2.to(device)
                     noise=setNoise(fixnoise2)
                     fakebig,_,_,_= splitW(im, fixnoise2, None, ganGeneration)
-                    vutils.save_image(fakebig, '%s/mosaicTransfer_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch, desc), normalize=True)
+                    vutils.save_image(fakebig, '%s/mosaicTransfer_epoch_%03d_%s.jpg' % (opt.output_folder, epoch, desc), normalize=True)
                 except Exception as e:
                     print ("test image error",e)
             netMix.train()
 
             ##OPTIONAL
             ##save/load model for later use if desired
-            #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.outputFolder, epoch*0,desc)
+            #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.output_folder, epoch*0,desc)
             #torch.save(netU.state_dict(),outModelName )
             #netU.load_state_dict(torch.load(outModelName))

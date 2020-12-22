@@ -8,7 +8,7 @@ import torchvision.utils as vutils
 import os
 from PIL import Image
 import PIL
-from config import opt,bMirror,nDep
+from config import opt,bMirror,nDepG
 import sys
 
 ##normal coordinate grid
@@ -104,18 +104,18 @@ def randomTile(flow,z):
 def getImage(name, bDel=False):
     img = Image.open(name)
     if not bDel:##so texture, may rescale
-            if opt.textureScale != 1:
-                img = img.resize((int(img.size[0] * opt.textureScale), int(img.size[1] * opt.textureScale)), PIL.Image.LANCZOS)
+            if opt.texture_scale != 1:
+                img = img.resize((int(img.size[0] * opt.texture_scale), int(img.size[1] * opt.texture_scale)), PIL.Image.LANCZOS)
     else:
-            if opt.contentScale != 1:
-                img = img.resize((int(img.size[0] * opt.contentScale), int(img.size[1] * opt.contentScale)), PIL.Image.LANCZOS)
+            if opt.content_scale != 1:
+                img = img.resize((int(img.size[0] * opt.content_scale), int(img.size[1] * opt.content_scale)), PIL.Image.LANCZOS)
 
 
     img = np.array(img)/255.0*2-1
 
     if bDel:##put to some power of 2 size, due to split routines
-        delW = img.shape[1]%2**(nDep+1)
-        delH = img.shape[0]%2**(nDep+1)
+        delW = img.shape[1]%2**(nDepG+1)
+        delH = img.shape[0]%2**(nDepG+1)
         if delH >0:
             img = img[:-delH]
         if delW >0:
@@ -126,16 +126,16 @@ def getImage(name, bDel=False):
     return img
 
 def getTemplates(opt,N,vis=True,path=str(bMirror)):
-    x=getImage(opt.contentPath + os.listdir(opt.contentPath)[0], True)
+    x=getImage(opt.content_path + os.listdir(opt.content_path)[0], True)
     if N ==0:
         return x
 
     flow=getCanonic(x)
-    nTex = len(os.listdir(opt.texturePath))
+    nTex = len(os.listdir(opt.texture_path))
     out = torch.FloatTensor(N,3,x.shape[2],x.shape[3]).half()
-    files=os.listdir(opt.texturePath)
+    files=os.listdir(opt.texture_path)
     for n in range(N):
-        z=getImage(opt.texturePath + files[n % nTex])
+        z=getImage(opt.texture_path + files[n % nTex])
         out[n:n+1] = randomTile(flow,z)
     if vis:
         vutils.save_image(out[:8].float(),path+'templates.jpg', normalize=True,nrow=4,padding=10)##limit to 25 the shown templates
@@ -204,8 +204,8 @@ def getTemplateMixImage(mix, templates, mode='bilinear'):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--contentPath', required=True, help='path to dataset')
-    parser.add_argument('--texturePath', required=True, help='path to dataset')
+    parser.add_argument('--content_path', required=True, help='path to dataset')
+    parser.add_argument('--texture_path', required=True, help='path to dataset')
     parser.add_argument('--N', type=int, default=4)
     opt = parser.parse_args()
     print(opt)    

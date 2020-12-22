@@ -1,4 +1,4 @@
-from config import nDep as gen_ls
+from config import nDepG as gen_ls
 import torch
 import torch.nn as nn
 import sys

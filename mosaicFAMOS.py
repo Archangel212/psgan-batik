@@ -11,10 +11,10 @@ import torchvision.utils as vutils
 import itertools
 import numpy as np
 import sys
-from network import weights_init,NetUskip, Discriminator,calc_gradient_penalty,NetU_MultiScale
+from network import weights_init,NetUskip, Discriminator,calc_gradient_penalty,NetU_multi_scale
 from prepareTemplates import getTemplates,getTemplateMixImage,getImage
 
-from config import opt,bMirror,nz,nDep,criterion
+from config import opt,bMirror,nz,nDepG,criterion
 if opt.trainOverfit:
     from prepareTemplates import randCropOverfit as randCrop
 else:
@@ -30,18 +30,18 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 cudnn.benchmark = True
 
-canonicT=[transforms.RandomCrop(opt.imageSize),transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+canonicT=[transforms.RandomCrop(opt.image_size),transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 mirrorT= []
 if bMirror:
     mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
 transformTex=transforms.Compose(mirrorT+canonicT)
-dataset = TextureDataset(opt.texturePath,transformTex,opt.textureScale)
+dataset = TextureDataset(opt.texture_path,transformTex,opt.texture_scale)
 transformCon=transforms.Compose(canonicT)
-cdataset = TextureDataset(opt.contentPath,transformCon,opt.contentScale)
+cdataset = TextureDataset(opt.content_path,transformCon,opt.content_scale)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size,
                                          shuffle=True, num_workers=int(opt.workers))
-cdataloader = torch.utils.data.DataLoader(cdataset, batch_size=opt.batchSize,
+cdataloader = torch.utils.data.DataLoader(cdataset, batch_size=opt.batch_size,
                                          shuffle=True, num_workers=int(opt.workers))
 
 N=opt.N
@@ -51,7 +51,7 @@ ndf = int(opt.ndf)
 
 desc="fc"+str(opt.fContent)+ "_fAlpha" + \
      str(opt.fAlpha)+"_fTV"+str(opt.fTV)+"_fEntropy"+str(opt.fEntropy)+ "_fDiversity"+str(opt.fDiversity)+\
-     "_ngf"+str(ngf)+"_N"+str(N)+"_dep"+str(nDep)
+     "_ngf"+str(ngf)+"_N"+str(N)+"_dep"+str(nDepG)
 
 if opt.WGAN:
     desc +='_WGAN'
@@ -59,30 +59,30 @@ if opt.LS:
         desc += '_LS'
 if bMirror:
     desc += '_mirror'
-if opt.contentScale !=1 or opt.textureScale !=1:
-    desc +="_scale"+str(opt.contentScale)+";"+str(opt.textureScale)
+if opt.content_scale !=1 or opt.texture_scale !=1:
+    desc +="_scale"+str(opt.content_scale)+";"+str(opt.texture_scale)
 desc += '_cLoss'+str(opt.cLoss)
 
-if not opt.coordCopy:
+if not opt.coord_copy:
     desc += "no coord copy"
 
-targetMosaic,templates=getTemplates(opt,N,vis=True,path=opt.outputFolder+desc)
-fixnoise = torch.FloatTensor(1, nz, targetMosaic.shape[2]//2**nDep,targetMosaic.shape[3]//2**nDep)
+targetMosaic,templates=getTemplates(opt,N,vis=True,path=opt.output_folder+desc)
+fixnoise = torch.FloatTensor(1, nz, targetMosaic.shape[2]//2**nDepG,targetMosaic.shape[3]//2**nDepG)
 print("fixed variables",fixnoise.data.shape,targetMosaic.data.shape) 
 netD = Discriminator(ndf, opt.nDepD, bSigm=not opt.LS and not opt.WGAN)
 
 ##################################
-if opt.multiScale:
-    netMix = NetU_MultiScale(ngf, nDep, nz, bSkip=opt.skipConnections, nc=N + 5, ncIn=5, bTanh=False, bCopyIn=opt.coordCopy, Ubottleneck=opt.Ubottleneck)
+if opt.multi_scale:
+    netMix = NetU_multi_scale(ngf, nDepG, nz, bSkip=opt.skip_connections, nc=N + 5, ncIn=5, bTanh=False, bCopyIn=opt.coord_copy, Ubottleneck=opt.Ubottleneck)
 else:
-    netMix =NetUskip(ngf, nDep, nz, bSkip=opt.skipConnections, nc=N + 5, ncIn=5, bTanh=False, bCopyIn=opt.coordCopy, Ubottleneck=opt.Ubottleneck)##copy coords more often
+    netMix =NetUskip(ngf, nDepG, nz, bSkip=opt.skip_connections, nc=N + 5, ncIn=5, bTanh=False, bCopyIn=opt.coord_copy, Ubottleneck=opt.Ubottleneck)##copy coords more often
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ("device",device)
 
 Gnets=[netMix]
 
 if opt.refine:
-    netRefine=NetUskip(ngf, nDep, nz, bSkip=True, nc=5, ncIn=4 * 3 + 2 + 2, bTanh=False)
+    netRefine=NetUskip(ngf, nDepG, nz, bSkip=True, nc=5, ncIn=4 * 3 + 2 + 2, bTanh=False)
     Gnets +=[netRefine]
 if opt.cLoss>=100:
     from network import ColorReconstruction
@@ -105,8 +105,8 @@ for net in [netD] + Gnets:
     net=net.to(device)
     print(net)
 
-NZ = opt.imageSize//2**nDep
-noise = torch.FloatTensor(opt.batchSize, nz, NZ,NZ)
+NZ = opt.image_size//2**nDepG
+noise = torch.FloatTensor(opt.batch_size, nz, NZ,NZ)
 
 real_label = 1
 fake_label = 0
@@ -119,7 +119,7 @@ optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))#
 optimizerU = optim.Adam([param for net in Gnets for param in list(net.parameters())], lr=opt.lr, betas=(opt.beta1, 0.999))
 
 def famosGeneration(content, noise, templatePatch, bVis = False):
-    if opt.multiScale >0:
+    if opt.multi_scale >0:
         x = netMix(content, noise,templatePatch)
     else:
         x = netMix(content,noise)
@@ -150,7 +150,7 @@ for epoch in range(opt.niter):
         content = next(iter(cdataloader))[0]
         content = content.to(device)
 
-        content,templatePatch = randCrop(content,templates,opt.imageSize,targetMosaic)
+        content,templatePatch = randCrop(content,templates,opt.image_size,targetMosaic)
         templatePatch =templatePatch.to(device)##needed -- I create new float Tensor in randCrop
         if opt.trainOverfit:
             content = content.to(device)
@@ -188,7 +188,7 @@ for epoch in range(opt.niter):
 
         content = next(iter(cdataloader))[0]
         content = content.to(device)
-        content, templatePatch = randCrop(content,templates,opt.imageSize,targetMosaic)
+        content, templatePatch = randCrop(content,templates,opt.image_size,targetMosaic)
         templatePatch = templatePatch.to(device)  ##needed -- I create new float Tensor in randCrop
         content = content.to(device)
 
@@ -234,10 +234,10 @@ for epoch in range(opt.niter):
         ### RUN INFERENCE AND SAVE LARGE OUTPUT MOSAICS
         if i % 100 == 0:
             a=np.array(buf)
-            plotStats(a,opt.outputFolder+desc)
-            vutils.save_image(text,    '%s/real_textures.jpg' % opt.outputFolder,  normalize=True)
+            plotStats(a,opt.output_folder+desc)
+            vutils.save_image(text,    '%s/real_textures.jpg' % opt.output_folder,  normalize=True)
             IG=invblend(fake,mixedI,alpha[:,:1],alpha[:,1:2])
-            vutils.save_image(torch.cat([content[:,:3], mixedI, IG,fake, alpha, rgb_channels(A)], 2), '%s/mosaic_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch, desc), normalize=True)
+            vutils.save_image(torch.cat([content[:,:3], mixedI, IG,fake, alpha, rgb_channels(A)], 2), '%s/mosaic_epoch_%03d_%s.jpg' % (opt.output_folder, epoch, desc), normalize=True)
 
             fixnoise=setNoise(fixnoise)
             for net in Gnets:
@@ -248,29 +248,29 @@ for epoch in range(opt.niter):
                     fakebig, alpha, A, mixedbig = famosGeneration(targetMosaic, fixnoise, templates.unsqueeze(0), True)
                 else:
                     fakebig, alpha, A, mixedbig = splitW(targetMosaic, fixnoise, templates.unsqueeze(0), famosGeneration)
-            vutils.save_image(mixedbig,'%s/mixed_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch,desc), normalize =True)
+            vutils.save_image(mixedbig,'%s/mixed_epoch_%03d_%s.jpg' % (opt.output_folder, epoch,desc), normalize =True)
             if True:#
-                vutils.save_image(alpha,'%s/alpha_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch,desc), normalize=False)
-                vutils.save_image(rgb_channels(A), '%s/blenda_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch, desc), normalize=False)##already 01
+                vutils.save_image(alpha,'%s/alpha_epoch_%03d_%s.jpg' % (opt.output_folder, epoch,desc), normalize=False)
+                vutils.save_image(rgb_channels(A), '%s/blenda_epoch_%03d_%s.jpg' % (opt.output_folder, epoch, desc), normalize=False)##already 01
                 v=nn.functional.avg_pool2d(A.view(-1, 1, A.shape[2], A.shape[3]), int(16))
-                vutils.save_image(v,'%s/blendaBW_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch,desc), normalize=False)
+                vutils.save_image(v,'%s/blendaBW_epoch_%03d_%s.jpg' % (opt.output_folder, epoch,desc), normalize=False)
 
-            vutils.save_image(fakebig,'%s/mosaicBig_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch,desc),normalize=True)
+            vutils.save_image(fakebig,'%s/mosaicBig_epoch_%03d_%s.jpg' % (opt.output_folder, epoch,desc),normalize=True)
 
             ##RUN OUT-OF-SAMPLE
             with torch.no_grad():
                 try:
-                    im=getImage(opt.testImage, bDel=True)
+                    im=getImage(opt.test_image, bDel=True)
                     if im.shape[2]>targetMosaic.shape[2] or im.shape[3]>targetMosaic.shape[3]:
                         print ("cropping to original mosaic size")
                         im=im[:,:,:targetMosaic.shape[2],:targetMosaic.shape[3]]
                     im=torch.cat([im,targetMosaic[:,3:5,:im.shape[2],:im.shape[3]]],1)##coords
                     print ("test image size",im.shape)
-                    fixnoise2 = torch.FloatTensor(1, nz, im.shape[2] // 2 ** nDep,im.shape[3] // 2 ** nDep)
+                    fixnoise2 = torch.FloatTensor(1, nz, im.shape[2] // 2 ** nDepG,im.shape[3] // 2 ** nDepG)
                     fixnoise2 = fixnoise2.to(device)
                     fixnoise2 =setNoise(fixnoise2)
                     fakebig,_,_,_= splitW(im, fixnoise2, templates.unsqueeze(0), famosGeneration)
-                    vutils.save_image(fakebig, '%s/mosaicTransfer_epoch_%03d_%s.jpg' % (opt.outputFolder, epoch, desc), normalize=True)
+                    vutils.save_image(fakebig, '%s/mosaicTransfer_epoch_%03d_%s.jpg' % (opt.output_folder, epoch, desc), normalize=True)
                 except Exception as e:
                     print ("test image error",e)
 

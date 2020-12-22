@@ -7,6 +7,10 @@ import PIL
 import torch.nn as nn
 from config import opt
 
+from datetime import datetime
+import pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
 
 class TextureDataset(Dataset):
     """Dataset wrapping images from a random folder with textures
@@ -24,7 +28,7 @@ class TextureDataset(Dataset):
             names = os.listdir(img_path)
             self.X_train =[]
             for n in names:
-                name =self.img_path + n
+                name = os.path.join(self.img_path, n)
                 try:
                     img = Image.open(name)
                     try:
@@ -134,11 +138,11 @@ def plotStats(a,path):
 #@param I_G is parametric generation
 #@param I_M is mixed template image
 def blend(I_G, I_M, alpha, beta):
-    if opt.blendMode==0:
+    if opt.blend_mode==0:
         out= I_M*(1 - beta) + alpha * I_G[:, :3]
-    if opt.blendMode==1:
+    if opt.blend_mode==1:
         out = I_G[:, :3] * alpha * 2 + I_M
-    if opt.blendMode==2:##this is the mode described in paper, convex combination
+    if opt.blend_mode==2:##this is the mode described in paper, convex combination
         out= I_G[:, :3] * alpha + (1 - alpha) * I_M
     return torch.clamp(out,-1,1)
 
@@ -239,7 +243,7 @@ if opt.zPeriodic:
             v = 0.5 + i / float(nPeriodic//4+1e-10)
             buf += [0, v, v, 0]
             buf += [0, -v, v, 0]  # #so from other quadrants as well..
-        buf=buf[:2*nPeriodic]
+        buf = buf[:2*nPeriodic]
         awave = np.array(buf, dtype=np.float32) * np.pi
         awave = torch.FloatTensor(awave).unsqueeze(-1).unsqueeze(-1).unsqueeze(0)
         return awave
@@ -248,11 +252,11 @@ if opt.zPeriodic:
     class Waver(nn.Module):
         def __init__(self):
             super(Waver, self).__init__()
-            if opt.zGL >0:
-                K=50
-                layers=[nn.Conv2d(opt.zGL, K, 1)]
-                layers +=[nn.ReLU(True)]
-                layers += [nn.Conv2d(K,2*opt.zPeriodic, 1)]
+            if opt.zGL > 0:
+                K = 60
+                layers = [nn.Conv2d(opt.zGL, K, 1)]
+                layers += [nn.ReLU(True)]
+                layers += [nn.Conv2d(K, 2*opt.zPeriodic, 1)]
                 self.learnedWN =  nn.Sequential(*layers)
             else:##static
                 self.learnedWN = nn.Parameter(torch.zeros(opt.zPeriodic * 2).uniform_(-1, 1).unsqueeze(-1).unsqueeze(-1).unsqueeze(0) * 0.2)
@@ -282,5 +286,42 @@ def setNoise(noise):
         offset = (noise[:, -opt.zPeriodic:, :1, :1] * 1.0).uniform_(-1, 1) * 6.28
         offset = offset.repeat(1, 1, noise.shape[2], noise.shape[3])
         wave = torch.sin(raw[:, ::2] + raw[:, 1::2] + offset)
-        noise[:,-opt.zPeriodic:]=wave
+        noise[:,-opt.zPeriodic:] = wave
     return noise
+
+def save_model(epoch, generator, generator_optimizer, discriminator, discriminator_optimizer, output_dir):
+  # saving training result
+  generator.save(add_state={'optimizer_state_dict' : generator_optimizer.state_dict()},
+              file_name=os.path.join(output_dir,'generator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+  discriminator.save(add_state={'optimizer_state_dict' : discriminator_optimizer.state_dict()},
+              file_name=os.path.join(output_dir,'discriminator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+
+def plot_loss(log_dir):
+  plt.figure(figsize=(5,5))
+
+  #find on csv file
+  csv_path = [p for p in Path(log_dir).rglob("*.csv")][0]
+  df = pd.read_csv(csv_path,index_col=None)
+
+  plt.subplot(3,1,1)
+  plt.plot(df["epoch"], df["total_loss"], color="g")
+  plt.xlabel("epoch")
+  plt.ylabel("total_loss")
+  
+  plt.subplot(3,1,2)
+  plt.plot(df["epoch"], df["discriminator_loss"], color="b")
+  plt.xlabel("epoch")
+  plt.ylabel("discriminator_loss")
+  
+  plt.subplot(3,1,3)
+  plt.plot(df["epoch"], df["generator_loss"], color="r")
+  plt.xlabel("epoch")
+  plt.ylabel("generator_loss")
+  
+
+  loss_path = os.path.join(log_dir, "loss_plot")
+  os.makedirs(loss_path, exist_ok=True)
+
+  plt.savefig(os.path.join(loss_path,"loss.jpg"))
+  plt.close()
+  

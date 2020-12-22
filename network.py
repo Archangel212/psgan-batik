@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from config import bfirstNoise, opt
+from config import bfirst_noise, opt
 from torchvision import models
 from prepareTemplates import getTemplateMixImage
 
@@ -34,24 +34,24 @@ def weights_init(m):
 class Discriminator(nn.Module):
     # @param ncIn is input channels
     # @param ndf is channels of first layer, doubled up after every conv. layer with stride
-    # @param nDep is depth
+    # @param nDepG is depth
     # @param bSigm is final nonlinearity, off for some losses
-    def __init__(self, ndf, nDep, ncIn=3, bSigm=True):
+    def __init__(self, ndf, nDepG, ncIn=3, bSigm=True):
         super(Discriminator, self).__init__()
 
         layers = []
         of = ncIn
-        for i in range(nDep):
-            if i==nDep-1:
+        for i in range(nDepG):
+            if i==nDepG-1:
                 nf=1
             else:
                 nf = ndf*2**i
             layers+=[nn.Conv2d(of, nf, 5, 2, 2)]##needs input 161 #hmm, also worls loke this
-            if i !=0 and i !=nDep-1:
+            if i !=0 and i !=nDepG-1:
                 if True:#not opt.WGAN:
                     layers+=[norma(nf )]
 
-            if i < nDep -1:
+            if i < nDepG -1:
                 layers+=[nn.LeakyReLU(0.2, inplace=True)]
             else:
                 if bSigm:
@@ -68,25 +68,25 @@ class Discriminator(nn.Module):
 ##################################################
 class NetG(nn.Module):
     # @param ngf is channels of first layer, doubled up after every stride operation, or halved after upsampling
-    # @param nDep is depth, both of decoder and of encoder
+    # @param nDepG is depth, both of decoder and of encoder
     # @param nz is dimensionality of stochastic noise we add
-    def __init__(self, ngf, nDep, nz,nc=3):
+    def __init__(self, ngf, nDepG, nz,nc=3):
         super(NetG, self).__init__()
 
         of = nz
         layers = []
-        for i in range(nDep):
+        for i in range(nDepG):
 
-            if i == nDep - 1:
+            if i == nDepG - 1:
                 nf = nc
             else:
-                nf = ngf * 2 ** (nDep - 2 - i)
+                nf = ngf * 2 ** (nDepG - 2 - i)
             for j in range(opt.nBlocks):
                 layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
 
             layers += [nn.Upsample(scale_factor=2, mode='nearest')]  # nearest is default anyway
             layers += [nn.Conv2d(of, nf, 5, 1, 2)]
-            if i == nDep - 1:
+            if i == nDepG - 1:
                 layers += [nn.Tanh()]
             else:
                 layers += [norma(nf)]
@@ -103,31 +103,31 @@ class NetED(nn.Module):
     # @param nc is output channels
     # @param ncIn is input channels
     # @param ngf is channels of first layer, doubled up after every stride operation, or halved after upsampling
-    # @param nDep is depth, both of decoder and of encoder
+    # @param nDepG is depth, both of decoder and of encoder
     # @param nz is dimensionality of stochastic noise we add
     # @param NCbot can optionally specify the bottleneck size explicitly
     # @param bCopyIn copies the input channels at every decoder level -- special skip connections
     # @param bSkip turns skip connections btw encoder and decoder off
     # @param bTanh turns nonlinearity on and off
-    def __init__(self, ngf, nDep, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bTanh=True, lessD=0,bCopyIn=False):
+    def __init__(self, ngf, nDepG, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bTanh=True, lessD=0,bCopyIn=False):
         super(NetED, self).__init__()
-        self.nDep = nDep
+        self.nDepG = nDepG
         self.eblocks = nn.ModuleList()
         self.dblocks = nn.ModuleList()
         self.bCopyIn = bCopyIn
 
         if Ubottleneck <= 0:
-            Ubottleneck = ngf * 2 ** (nDep - 1)
+            Ubottleneck = ngf * 2 ** (nDepG - 1)
 
         if ncIn is None:
             of = nc
         else:
             of = ncIn  ##in some cases not an RGB conditioning
 
-        of += bfirstNoise * nz
-        for i in range(self.nDep):
+        of += bfirst_noise * nz
+        for i in range(self.nDepG):
             layers = []
-            if i == self.nDep - 1:
+            if i == self.nDepG - 1:
                 nf = Ubottleneck
             else:
                 nf = ngf * 2 ** i
@@ -135,7 +135,7 @@ class NetED(nn.Module):
             layers += [nn.Conv2d(of, nf, 5, 2, 2)]
             if i != 0:
                 layers += [norma(nf)]
-            if i < self.nDep - 1:
+            if i < self.nDepG - 1:
                 layers += [nn.LeakyReLU(0.2, inplace=True)]
             else:
                 layers += [nn.Tanh()]
@@ -143,20 +143,20 @@ class NetED(nn.Module):
             block = nn.Sequential(*layers)
             self.eblocks += [block]
 
-        ##first nDep layers
+        ##first nDepG layers
         of = nz
-        for i in range(nDep + lessD):
+        for i in range(nDepG + lessD):
             layers = []
-            if i == nDep - 1:
+            if i == nDepG - 1:
                 nf = nc
             else:
-                nf = ngf * 2 ** (nDep - 2 - i)
+                nf = ngf * 2 ** (nDepG - 2 - i)
             for j in range(opt.nBlocks):
                 layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
 
             layers += [nn.Upsample(scale_factor=2, mode='nearest')]  # nearest is default anyway
             layers += [nn.Conv2d(of, nf, 4 + 1, 1, 2)]
-            if i == nDep - 1:
+            if i == nDepG - 1:
                 if bTanh:
                     layers += [nn.Tanh()]
             else:
@@ -168,7 +168,7 @@ class NetED(nn.Module):
 
     ##encoder
     def e(self,x):
-        for i in range(self.nDep):
+        for i in range(self.nDepG):
             x = self.eblocks[i].forward(x)
         return x
 
@@ -188,32 +188,32 @@ class NetUskip(nn.Module):
     # @param nc is output channels
     # @param ncIn is input channels
     # @param ngf is channels of first layer, doubled up after every stride operation, or halved after upsampling
-    # @param nDep is depth, both of decoder and of encoder
+    # @param nDepG is depth, both of decoder and of encoder
     # @param nz is dimensionality of stochastic noise we add
     # @param NCbot can optionally specify the bottleneck size explicitly
     # @param bCopyIn copies the input channels at every decoder level -- special skip connections
     # @param bSkip turns skip connections btw encoder and decoder off
     # @param bTanh turns nonlinearity on and off
-   def __init__(self, ngf, nDep, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bSkip=True, bTanh =True, bCopyIn=False):
+   def __init__(self, ngf, nDepG, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bSkip=True, bTanh =True, bCopyIn=False):
         super(NetUskip, self).__init__()
-        self.nDep = nDep
+        self.nDepG = nDepG
         self.eblocks=nn.ModuleList()
         self.dblocks=nn.ModuleList()
         self.bSkip=bSkip
         self.bCopyIn = bCopyIn
 
         if Ubottleneck <=0:
-            Ubottleneck= ngf * 2 ** (nDep - 1)
+            Ubottleneck= ngf * 2 ** (nDepG - 1)
 
         if ncIn is None:	        
             of = nc
         else:
             of=ncIn ##in some cases not an RGB conditioning
 
-        of += bfirstNoise*nz
-        for i in range(self.nDep):
+        of += bfirst_noise*nz
+        for i in range(self.nDepG):
             layers = []
-            if i == self.nDep-1:
+            if i == self.nDepG-1:
                 nf = Ubottleneck
             else:
                 nf = ngf*2**i
@@ -223,7 +223,7 @@ class NetUskip(nn.Module):
             layers+=[nn.Conv2d(of, nf, 5, 2, 2)]
             if i !=0:
                 layers+=[norma(nf )]
-            if i < self.nDep -1:
+            if i < self.nDepG -1:
                 layers+=[nn.LeakyReLU(0.2, inplace=True)]
             else:
                 layers+=[nn.Tanh()]
@@ -231,14 +231,14 @@ class NetUskip(nn.Module):
             block= nn.Sequential(*layers)
             self.eblocks +=[block]
 
-        ##first nDep layers
-        of = nz + Ubottleneck - bfirstNoise * nz
-        for i in range(nDep):
+        ##first nDepG layers
+        of = nz + Ubottleneck - bfirst_noise * nz
+        for i in range(nDepG):
             layers = []
-            if i==nDep-1:
+            if i==nDepG-1:
                 nf=nc
             else:
-                nf = ngf*2**(nDep-2-i)
+                nf = ngf*2**(nDepG-2-i)
             
             if i>0 and self.bSkip:
                of*=2##the u skip connections
@@ -250,7 +250,7 @@ class NetUskip(nn.Module):
 
             layers +=[nn.Upsample(scale_factor=2, mode='nearest')]#nearest is default anyway
             layers+=[nn.Conv2d(of,nf, 5, 1, 2)]
-            if i == nDep-1:
+            if i == nDepG-1:
                 if bTanh:
                     layers+=[nn.Tanh()]
             else:
@@ -262,20 +262,20 @@ class NetUskip(nn.Module):
 
 
    def forward(self, input1,input2=None):
-        if bfirstNoise and input2 is not None:
-            x = torch.cat([input1,nn.functional.upsample(input2,scale_factor=2**self.nDep,mode='bilinear')],1)
+        if bfirst_noise and input2 is not None:
+            x = torch.cat([input1,nn.functional.upsample(input2,scale_factor=2**self.nDepG,mode='bilinear')],1)
             input2=None
         else:
             x=input1##initial input
 
         skips = []
         input1 = input1[:, 3:5]##only coords
-        for i in range(self.nDep):
+        for i in range(self.nDepG):
             if i >0 and self.bCopyIn:
                 input1=nn.functional.avg_pool2d(input1,int(2))
                 x=torch.cat([x,input1],1)
             x= self.eblocks[i].forward(x)
-            if i !=self.nDep-1:
+            if i !=self.nDepG-1:
                 if self.bCopyIn:
                     skips += [torch.cat([x,nn.functional.avg_pool2d(input1,int(2))],1)]
                 else:
@@ -286,7 +286,7 @@ class NetUskip(nn.Module):
         x=bottle
         for i in range(len(self.dblocks)):
             x= self.dblocks[i].forward(x) 
-            if i< self.nDep-1 and self.bSkip:
+            if i< self.nDepG-1 and self.bSkip:
                 x = torch.cat((x,skips[-1-i]),1)
         return x
 
@@ -294,11 +294,11 @@ class NetUskip(nn.Module):
 
 ##multi scale template mixing in RGB space!
 # please see documentation of _netUskip
-class NetU_MultiScale(nn.Module):
+class NetU_multi_scale(nn.Module):
 
-    def __init__(self, ngf, nDep, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bSkip=True, bTanh=True, bCopyIn=False):
-        super(NetU_MultiScale, self).__init__()
-        self.nDep = nDep
+    def __init__(self, ngf, nDepG, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bSkip=True, bTanh=True, bCopyIn=False):
+        super(NetU_multi_scale, self).__init__()
+        self.nDepG = nDepG
         self.eblocks = nn.ModuleList()  
         self.dblocks = nn.ModuleList()
         self.bSkip = bSkip
@@ -306,17 +306,17 @@ class NetU_MultiScale(nn.Module):
         assert(ngf > opt.N+10)##make sure enough channels for image mixes
 
         if Ubottleneck <=0:
-            Ubottleneck = ngf * 2 ** (nDep - 1)
+            Ubottleneck = ngf * 2 ** (nDepG - 1)
 
         if ncIn is None:
             of = nc
         else:
             of = ncIn  ##in some cases not an RGB conditioning
 
-        of += bfirstNoise * nz
-        for i in range(self.nDep):
+        of += bfirst_noise * nz
+        for i in range(self.nDepG):
             layers = []
-            if i == self.nDep - 1:
+            if i == self.nDepG - 1:
                 nf = Ubottleneck
             else:
                 nf = ngf * 2 ** i
@@ -326,7 +326,7 @@ class NetU_MultiScale(nn.Module):
             layers += [nn.Conv2d(of, nf, 5, 2, 2)] 
             if i != 0:
                 layers += [norma(nf)]  ##append is more performant
-            if i < self.nDep - 1:
+            if i < self.nDepG - 1:
                 layers += [nn.LeakyReLU(0.2, inplace=True)]
             else:
                 layers += [nn.Tanh()]
@@ -334,14 +334,14 @@ class NetU_MultiScale(nn.Module):
             block = nn.Sequential(*layers)
             self.eblocks += [block]
 
-        ##first nDep layers
-        of = nz + Ubottleneck - bfirstNoise * nz
-        for i in range(nDep):
+        ##first nDepG layers
+        of = nz + Ubottleneck - bfirst_noise * nz
+        for i in range(nDepG):
             layers = []
-            if i == nDep - 1:
+            if i == nDepG - 1:
                 nf = nc
             else:
-                nf = ngf * 2 ** (nDep - 2 - i)
+                nf = ngf * 2 ** (nDepG - 2 - i)
 
             if i > 0 and self.bSkip:
                 of *= 2  ##the u skip connections
@@ -357,7 +357,7 @@ class NetU_MultiScale(nn.Module):
             layers += [nn.Upsample(scale_factor=2, mode='nearest')]  ##this nearst is deafault anyway
             layers += [
                 nn.Conv2d(of, nf, 4 + 1, 1, 2)]  ##auu, much more memory!!!  also other kernel when doung conv2d ?
-            if i == nDep - 1:
+            if i == nDepG - 1:
                 if bTanh:
                     layers += [nn.Tanh()]
             else:
@@ -368,20 +368,20 @@ class NetU_MultiScale(nn.Module):
             self.dblocks += [block]
 
     def forward(self, input1, input2=None,M=None):
-        if bfirstNoise and input2 is not None:
-            x = torch.cat([input1, nn.functional.upsample(input2, scale_factor=2 ** self.nDep,mode='bilinear')], 1)
+        if bfirst_noise and input2 is not None:
+            x = torch.cat([input1, nn.functional.upsample(input2, scale_factor=2 ** self.nDepG,mode='bilinear')], 1)
             input2 = None
         else:
             x = input1  ##initial input
 
         skips = []
         input1 = input1[:, 3:5]  ##only coords
-        for i in range(self.nDep):
+        for i in range(self.nDepG):
             if i > 0 and self.bCopyIn:
                 input1 = nn.functional.avg_pool2d(input1, int(2))
                 x = torch.cat([x, input1], 1)
             x = self.eblocks[i].forward(x)
-            if i != self.nDep - 1:
+            if i != self.nDepG - 1:
                 if self.bCopyIn:
                     skips += [torch.cat([x, nn.functional.avg_pool2d(input1, int(2))], 1)]
                 else:
@@ -394,16 +394,16 @@ class NetU_MultiScale(nn.Module):
         with torch.no_grad():
             MM=M.view(-1,3,M.shape[3],M.shape[4])##only RGB images
             mFeat = []##without full length M
-            for i in range(1,self.nDep):
+            for i in range(1,self.nDepG):
                 sc = 2**i
                 mFeat.append(nn.functional.avg_pool2d(MM, int(sc)).view(M.shape[0],M.shape[1],3,M.shape[3]//sc,M.shape[4]//sc))
             mFeat=mFeat[::-1]
 
         for i in range(len(self.dblocks)):
             x = self.dblocks[i].forward(x)
-            if i < self.nDep - 1 and self.bSkip:
+            if i < self.nDepG - 1 and self.bSkip:
                 x = torch.cat((x, skips[-1 - i]), 1)
-            if i < self.nDep-1:
+            if i < self.nDepG-1:
                 blendA = 4*nn.functional.tanh(x[:,:opt.N])##channels for mixing
                 blendA = nn.functional.softmax(1 * (blendA - blendA.detach().max()),dim=1)
                 mixed = getTemplateMixImage(blendA,mFeat[i])
@@ -412,12 +412,12 @@ class NetU_MultiScale(nn.Module):
 
 ##even simpler network for reconstruction -- only kernels 1x1
 class ColorReconstruction(nn.Module):
-    def __init__(self,ndf,nDep,nc=3):
+    def __init__(self,ndf,nDepG,nc=3):
         super(ColorReconstruction, self).__init__()
         layers = []
         of = nc
         nf=of
-        for i in range(nDep):
+        for i in range(nDepG):
             nf = ndf*2**i
             layers+=[nn.Conv2d(of, nf, 1)]
             layers+=[nn.LeakyReLU(0.2, inplace=True)]
