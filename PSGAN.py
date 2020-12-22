@@ -84,7 +84,6 @@ tlog.set_default_Keys(["epoch", "lossD", "lossG", "D_x", "D_G_z1", "D_G_z2"])
 start = time.time()
 for epoch in range(opt.niter):
   # for logging
-  epoch = 0.0
   lossD = 0.0
   lossG = 0.0
   D_x = 0.0
