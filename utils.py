@@ -289,12 +289,12 @@ def setNoise(noise):
         noise[:,-opt.zPeriodic:] = wave
     return noise
 
-def save_model(epoch, generator, generator_optimizer, discriminator, discriminator_optimizer, output_dir):
+def save_model(epoch, generator, generator_optimizer, discriminator, discriminator_optimizer, output_folder):
   # saving training result
   generator.save(add_state={'optimizer_state_dict' : generator_optimizer.state_dict()},
-              file_name=os.path.join(output_dir,'generator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+              file_name=os.path.join(output_folder,'generator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
   discriminator.save(add_state={'optimizer_state_dict' : discriminator_optimizer.state_dict()},
-              file_name=os.path.join(output_dir,'discriminator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+              file_name=os.path.join(output_folder,'discriminator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
 
 def plot_loss(log_dir):
   plt.figure(figsize=(5,5))

@@ -162,6 +162,6 @@ for epoch in range(opt.niter):
   tlog.log([epoch+1, float(lossD), float(lossG), 
   float(D_x), float(D_G_z1), float(D_G_z2)])
 
-save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_dir)
+save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 elapsed_time = time.time() - start
 print("Time for training: {} seconds".format(elapsed_time))
