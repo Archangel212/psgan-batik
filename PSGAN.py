@@ -111,7 +111,7 @@ for epoch in range(opt.niter):
     textures, _ = data
     textures = textures.to(device)
     output = netD(textures)
-    errD_real = criterion(output, real_label)
+    errD_real = criterion(output, output.detach()*0 + real_label)
     errD_real.backward()
     D_x = output.mean().item()
 
@@ -119,7 +119,7 @@ for epoch in range(opt.niter):
     noise = setNoise(noise)
     fake = netG(noise)
     output = netD(fake.detach())
-    errD_fake = criterion(output, fake_label)
+    errD_fake = criterion(output, output.detach()*0 + fake_label)
     errD_fake.backward()
     D_G_z1 = output.mean().item()
 
@@ -135,10 +135,10 @@ for epoch in range(opt.niter):
     for net in Gnets:
       net.zero_grad()
 
-    noise = setNoise(noise)
-    fake = netG(noise)
+    # noise = setNoise(noise)
+    # fake = netG(noise)
     output = netD(fake)
-    errG = criterion(output, real_label)
+    errG = criterion(output, output.detach()*0 + real_label)
     errG.backward()
     D_G_z2 = output.mean().item()
     optimizerG.step()
