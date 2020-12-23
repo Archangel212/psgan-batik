@@ -78,12 +78,6 @@ if opt.output_folder=='.':
     stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     opt.output_folder += stamp + "/"
 
-if not os.path.exists(opt.output_folder):
-  try:
-    os.makedirs(opt.output_folder)
-  except OSError:
-    pass
-print("\nsaving at {}\n".format(opt.output_folder))
 
 
 

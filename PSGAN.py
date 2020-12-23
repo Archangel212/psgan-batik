@@ -11,6 +11,7 @@ from network import weights_init, Discriminator, calc_gradient_penalty, NetG
 from config import opt, bMirror, nz, nDepG, criterion
 import time
 from train_logger import TrainLogger
+import os
 
 if opt.manualSeed is None:
   opt.manualSeed = 618
@@ -26,6 +27,9 @@ if bMirror:
 transformTex = transforms.Compose(mirrorT+canonicT)
 dataset = TextureDataset(opt.texture_path, transformTex, opt.texture_scale)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers = int(opt.workers))
+
+os.makedirs(opt.output_folder, exist_ok=True)
+print("\nsaving at {}\n".format(opt.output_folder))
 
 N = 0
 ngf = int(opt.ngf)
@@ -92,7 +96,7 @@ for epoch in range(opt.niter):
 
   for i, data in enumerate(dataloader, 0):
     t0 = time.time()
-    sys.stdout.flush()
+    #sys.stdout.flush()
     # train with real
     netD.zero_grad()
     textures, _ = data
