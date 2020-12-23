@@ -316,25 +316,42 @@ def plot_loss(log_dir):
   csv_path = [p for p in Path(log_dir).rglob("*.csv")][0]
   df = pd.read_csv(csv_path,index_col=None)
 
-  plt.subplot(3,1,1)
-  plt.plot(df["epoch"], df["total_loss"], color="g")
-  plt.xlabel("epoch")
-  plt.ylabel("total_loss")
-  
-  plt.subplot(3,1,2)
-  plt.plot(df["epoch"], df["discriminator_loss"], color="b")
-  plt.xlabel("epoch")
-  plt.ylabel("discriminator_loss")
-  
-  plt.subplot(3,1,3)
-  plt.plot(df["epoch"], df["generator_loss"], color="r")
-  plt.xlabel("epoch")
-  plt.ylabel("generator_loss")
-  
-
-  loss_path = os.path.join(log_dir, "loss_plot")
+  loss_path = os.path.join(log_dir, "plot")
   os.makedirs(loss_path, exist_ok=True)
 
+  plt.subplot(2,1,1)
+  plt.plot(df["epoch"], df["lossG"], color="r")
+  plt.xlabel("epoch")
+  plt.title("generator_loss")
+  
+  plt.subplot(2,1,2)
+  plt.plot(df["epoch"], df["lossD"], color="b")
+  plt.xlabel("epoch")
+  plt.title("discriminator_loss_real&fakeimg")
+  
+  plt.tight_layout(pad=2.0)
   plt.savefig(os.path.join(loss_path,"loss.jpg"))
   plt.close()
+
+  #============================================================
+
+  plt.subplot(3,1,1)
+  plt.plot(df["epoch"], df["D_x"], color="r")
+  plt.xlabel("epoch")
+  plt.title("D_output_on_realimgs")
+
+  plt.subplot(3,1,2)
+  plt.plot(df["epoch"], df["D_G_z1"], color="r")
+  plt.xlabel("epoch")
+  plt.title("D_output_on_fakeimgs_fakelabel")
+
+  plt.subplot(3,1,3)
+  plt.plot(df["epoch"], df["D_G_z2"], color="r")
+  plt.xlabel("epoch")
+  plt.title("D_output_on_fakeimgs_reallabel")
+  
+  plt.tight_layout(h_pad=1.0)
+  plt.savefig(os.path.join(loss_path,"D_output.jpg"))
+  plt.close()
+  
   

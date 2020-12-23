@@ -13,6 +13,17 @@ import time
 from train_logger import TrainLogger
 import os
 
+
+os.makedirs(opt.output_folder, exist_ok=True)
+print("\nsaving at {}\n".format(opt.output_folder))
+
+text_file = open(os.path.join(opt.output_folder,"options.txt"), "w")
+text_file.write(str(opt))
+text_file.close()
+print (opt)
+
+
+
 if opt.manualSeed is None:
   opt.manualSeed = 618
 print("Random Seed: ", opt.manualSeed)
@@ -28,8 +39,6 @@ transformTex = transforms.Compose(mirrorT+canonicT)
 dataset = TextureDataset(opt.texture_path, transformTex, opt.texture_scale)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers = int(opt.workers))
 
-os.makedirs(opt.output_folder, exist_ok=True)
-print("\nsaving at {}\n".format(opt.output_folder))
 
 N = 0
 ngf = int(opt.ngf)
@@ -102,7 +111,7 @@ for epoch in range(opt.niter):
     textures, _ = data
     textures = textures.to(device)
     output = netD(textures)
-    errD_real = criterion(output, output.detach()*0 + real_label)
+    errD_real = criterion(output, real_label)
     errD_real.backward()
     D_x = output.mean().item()
 
@@ -110,7 +119,7 @@ for epoch in range(opt.niter):
     noise = setNoise(noise)
     fake = netG(noise)
     output = netD(fake.detach())
-    errD_fake = criterion(output, output.detach()*0 + fake_label)
+    errD_fake = criterion(output, fake_label)
     errD_fake.backward()
     D_G_z1 = output.mean().item()
 
@@ -129,7 +138,7 @@ for epoch in range(opt.niter):
     noise = setNoise(noise)
     fake = netG(noise)
     output = netD(fake)
-    errG = criterion(output, output.detach()*0 + real_label)
+    errG = criterion(output, real_label)
     errG.backward()
     D_G_z2 = output.mean().item()
     optimizerG.step()
@@ -166,3 +175,4 @@ for epoch in range(opt.niter):
 save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 elapsed_time = time.time() - start
 print("Time for training: {} seconds".format(elapsed_time))
+

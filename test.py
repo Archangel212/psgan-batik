@@ -35,5 +35,4 @@ import math
 # print(input)
 # print(math.log(2))
 
-for i,d in enumerate([1,2,3,4,5],0):
-  print(i,d)
+plot_loss("/Users/mac/Deep_Learning/SinGAN/psgan-batik/log/Batik_500by500_homogenous_736-900/v1_kernel=5,generator_upsampleConv2d,zl_dim=40,zg_dim=20,_dim=3,learning_rate_g=2e-4,learning_rate_d=2e-4")

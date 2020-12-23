@@ -81,7 +81,3 @@ if opt.output_folder=='.':
 
 
 
-text_file = open(os.path.join(opt.output_folder,"options.txt"), "w")
-text_file.write(str(opt))
-text_file.close()
-print (opt)
