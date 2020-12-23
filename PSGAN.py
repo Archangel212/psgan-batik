@@ -78,8 +78,8 @@ noise = noise.to(device)
 fixnoise = fixnoise.to(device)
 
 # setup optimizer
-optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))#netD.parameters()
-optimizerG = optim.Adam([param for net in Gnets for param in list(net.parameters())], lr=opt.lr, betas=(opt.beta1, 0.999))
+optimizerG = optim.Adam([param for net in Gnets for param in list(net.parameters())], lr=opt.lrG, betas=(opt.beta1, 0.999))
+optimizerD = optim.Adam(netD.parameters(), lr=opt.lrD, betas=(opt.beta1, 0.999))#netD.parameters()
 
 # for loggin the trainning
 tlog = TrainLogger("train_log", log_dir=opt.output_folder, csv=True, header=True, suppress_err=False)
@@ -127,8 +127,8 @@ for epoch in range(opt.niter):
     for net in Gnets:
       net.zero_grad()
 
-    noise = setNoise(noise)
-    fake = netG(noise)
+    # noise = setNoise(noise)
+    # fake = netG(noise)
     output = netD(fake)
     errG = criterion(output, output.detach()*0 + real_label)
     errG.backward()
