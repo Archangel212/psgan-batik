@@ -93,7 +93,7 @@ for epoch in range(opt.niter):
 
   for i, data in enumerate(dataloader, 0):
     t0 = time.time()
-    # sys.stdout.flush()
+    sys.stdout.flush()
     # train with real
     netD.zero_grad()
     textures, _ = data
