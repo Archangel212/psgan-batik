@@ -3,12 +3,13 @@ import random
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
-from utils import TextureDataset, setNoise, learnedWN, save_model
+from utils import TextureDataset, setNoise, learnedWN, save_model,plot_loss
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+import torch.nn as nn
 import sys
 from network import weights_init, Discriminator, calc_gradient_penalty, NetG
-from config import opt, bMirror, nz, nDepG, criterion
+from config import opt
 import time
 from train_logger import TrainLogger
 import os
@@ -22,7 +23,7 @@ text_file.write(str(opt))
 text_file.close()
 print (opt)
 
-
+#=======================================================
 
 if opt.manualSeed is None:
   opt.manualSeed = 618
@@ -33,31 +34,25 @@ cudnn.benchmark = True
 
 canonicT=[transforms.RandomCrop(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 mirrorT= []
-if bMirror:
+if opt.mirror:
   mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
 transformTex = transforms.Compose(mirrorT+canonicT)
 dataset = TextureDataset(opt.texture_path, transformTex, opt.texture_scale)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers = int(opt.workers))
 
+criterion = nn.BCELoss()
 
-N = 0
 ngf = int(opt.ngf)
 ndf = int(opt.ndf)
 
-desc="fc"+str(opt.fContent)+"_ngf"+str(ngf)+"_ndf"+str(ndf)+"_dep"+str(nDepG)+"-"+str(opt.nDepD)
+nz=opt.zGL+opt.zLoc+opt.zPeriodic
+NZ = opt.image_size//2**opt.nDepG
+noise = torch.FloatTensor(opt.batch_size, nz, NZ, NZ)
+fixnoise = torch.FloatTensor(opt.batch_size, nz, NZ*4, NZ*4)
 
-if opt.WGAN:
-  desc +='_WGAN'
-if opt.LS:
-  desc += '_LS'
-if bMirror:
-  desc += '_mirror'
-if opt.texture_scale != 1:
-  desc +="_scale"+str(opt.texture_scale)
-netD = Discriminator(ndf, opt.nDepD, bSigm=not opt.LS and not opt.WGAN)
-
+netD = Discriminator(ndf, opt.nDepD)
 ##################################
-netG = NetG(ngf, nDepG, nz)
+netG = NetG(ngf, opt.nDepG, nz)
 print(NetG, netD)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ("device",device)
@@ -75,9 +70,6 @@ for net in [netD] + Gnets:
   net=net.to(device)
   print(net)
 
-NZ = opt.image_size//2**nDepG
-noise = torch.FloatTensor(opt.batch_size, nz, NZ, NZ)
-fixnoise = torch.FloatTensor(opt.batch_size, nz, NZ*4, NZ*4)
 
 real_label = 1
 fake_label = 0
@@ -147,25 +139,24 @@ for epoch in range(opt.niter):
           % (epoch, opt.niter, i, len(dataloader), 
           errD.item(), errG.item() ,D_x, D_G_z1, D_G_z2, time.time() - t0))
 
-    ### RUN INFERENCE AND SAVE LARGE OUTPUT MOSAICS
     if (epoch % 2 == 0 or epoch == (opt.niter - 1)) and (i == len(dataloader) - 1):
       vutils.save_image(textures, '%s/real_textures.jpg' % opt.output_folder,  normalize=True)
-      vutils.save_image(fake, '%s/generated_textures_%03d_%s.jpg' % (opt.output_folder, epoch,desc), normalize=True)
+      vutils.save_image(fake, '%s/generated_textures_%03d_%s.jpg' % (opt.output_folder, epoch), normalize=True)
 
       # fixnoise = setNoise(fixnoise)
 
-      # vutils.save_image(fixnoise.view(-1,1,fixnoise.shape[2],fixnoise.shape[3]), '%s/noiseBig_epoch_%03d_%s.jpg' % (opt.output_folder, epoch, desc), normalize=True)
+      # vutils.save_image(fixnoise.view(-1,1,fixnoise.shape[2],fixnoise.shape[3]), '%s/noiseBig_epoch_%03d_%s.jpg' % (opt.output_folder, epoch), normalize=True)
 
       # netG.eval()
       # with torch.no_grad():
       #     fakeBig = netG(fixnoise)
 
-      # vutils.save_image(fakeBig,'%s/big_texture_%03d_%s.jpg' % (opt.output_folder, epoch, desc),normalize=True)
+      # vutils.save_image(fakeBig,'%s/big_texture_%03d_%s.jpg' % (opt.output_folder, epoch),normalize=True)
       # netG.train()
 
       ##OPTIONAL
       ##save/load model for later use if desired
-      #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.output_folder, epoch*0,desc)
+      #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.output_folder, epoch*0)
       #torch.save(netU.state_dict(),outModelName )
       #netU.load_state_dict(torch.load(outModelName))
 
@@ -173,6 +164,7 @@ for epoch in range(opt.niter):
   float(D_x), float(D_G_z1), float(D_G_z2)])
 
 save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
+plot_loss(opt.output_folder)
 elapsed_time = time.time() - start
 print("Time for training: {} seconds".format(elapsed_time))
 
