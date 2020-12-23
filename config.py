@@ -61,15 +61,15 @@ opt.fContentM *= opt.fContent
 
 ##GAN criteria changes given loss options LS or WGAN
 if not opt.WGAN and not opt.LS:
-    criterion = nn.BCELoss()
+  criterion = nn.BCELoss()
 elif opt.LS:
-    def crit(x,l):
-        return ((x-l)**2).mean()
-    criterion=crit
+  def crit(x,l):
+    return ((x-l)**2).mean()
+  criterion=crit
 else:
-    def dummy(val,label):
-        return (val*(1-2*label)).mean()#so -1 fpr real. 1 fpr fake
-    criterion=dummy
+  def dummy(val,label):
+    return (val*(1-2*label)).mean()#so -1 fpr real. 1 fpr fake
+  criterion=dummy
 
 if opt.output_folder=='.':
     i = opt.texture_path[:-1].rfind('/')
@@ -77,11 +77,15 @@ if opt.output_folder=='.':
     opt.output_folder = "results/"+opt.texture_path[i+1:]+opt.content_path[i2+1:]##actually 2 nested folders -- cool
     stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     opt.output_folder += stamp + "/"
-try:
+
+if not os.path.exists(opt.output_folder):
+  try:
     os.makedirs(opt.output_folder)
-except OSError:
+  except OSError:
     pass
-print ("output_folderolder "+opt.output_folder)
+print("\nsaving at {}\n".format(opt.output_folder))
+
+
 
 text_file = open(os.path.join(opt.output_folder,"options.txt"), "w")
 text_file.write(str(opt))
