@@ -90,7 +90,6 @@ for epoch in range(opt.niter):
   D_G_z1 = 0.0
   D_G_z2 = 0.0
 
-
   for i, data in enumerate(dataloader, 0):
     t0 = time.time()
     sys.stdout.flush()

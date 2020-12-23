@@ -291,10 +291,23 @@ def setNoise(noise):
 
 def save_model(epoch, generator, generator_optimizer, discriminator, discriminator_optimizer, output_folder):
   # saving training result
-  generator.save(add_state={'optimizer_state_dict' : generator_optimizer.state_dict()},
-              file_name=os.path.join(output_folder,'generator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
-  discriminator.save(add_state={'optimizer_state_dict' : discriminator_optimizer.state_dict()},
-              file_name=os.path.join(output_folder,'discriminator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+  # generator.save(add_state={'optimizer_state_dict' : generator_optimizer.state_dict()},
+  #             file_name=os.path.join(output_folder,'generator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+  # discriminator.save(add_state={'optimizer_state_dict' : discriminator_optimizer.state_dict()},
+  #             file_name=os.path.join(output_folder,'discriminator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
+
+  model_output_path = os.path.join(output_folder,"generator_model_e{}.pth".format(epoch+1))
+  optimizer_output_path = os.path.join(output_folder,"generator_optimizer_e{}.pth".format(epoch+1))
+
+  torch.save(generator.state_dict(), model_output_path)
+
+  torch.save(generator_optimizer.state_dict(), optimizer_output_path)
+  
+  ##OPTIONAL
+  ##save/load model for later use if desired
+  #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.output_folder, epoch*0,desc)
+  #torch.save(netU.state_dict(),outModelName )
+  #netU.load_state_dict(torch.load(outModelName))
 
 def plot_loss(log_dir):
   plt.figure(figsize=(5,5))
