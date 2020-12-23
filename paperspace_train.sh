@@ -14,9 +14,9 @@ soffice --convert-to jpg ./log/$batik_dataset_name/$experiment_name/$experiment_
 
 msg="Training ${batik_dataset_name} with ${experiment_name}"
 
-git add --all
-git commit -m "$msg"
-git push 
+#git add --all
+#git commit -m "$msg"
+#git push 
 
 echo "Finished" $msg
 

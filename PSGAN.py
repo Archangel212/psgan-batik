@@ -97,7 +97,7 @@ for epoch in range(opt.niter):
 
   for i, data in enumerate(dataloader, 0):
     t0 = time.time()
-    #sys.stdout.flush()
+    sys.stdout.flush()
     # train with real
     netD.zero_grad()
     textures, _ = data
@@ -127,8 +127,8 @@ for epoch in range(opt.niter):
     for net in Gnets:
       net.zero_grad()
 
-    # noise = setNoise(noise)
-    # fake = netG(noise)
+    noise = setNoise(noise)
+    fake = netG(noise)
     output = netD(fake)
     errG = criterion(output, output.detach()*0 + real_label)
     errG.backward()
@@ -141,7 +141,7 @@ for epoch in range(opt.niter):
 
     if (epoch % 2 == 0 or epoch == (opt.niter - 1)) and (i == len(dataloader) - 1):
       vutils.save_image(textures, '%s/real_textures.jpg' % opt.output_folder,  normalize=True)
-      vutils.save_image(fake, '%s/generated_textures_%03d_%s.jpg' % (opt.output_folder, epoch), normalize=True)
+      vutils.save_image(fake, '%s/generated_textures_%03d.jpg' % (opt.output_folder, epoch), normalize=True)
 
       # fixnoise = setNoise(fixnoise)
 
