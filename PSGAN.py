@@ -78,8 +78,8 @@ noise = noise.to(device)
 fixnoise = fixnoise.to(device)
 
 # setup optimizer
-optimizerG = optim.Adam([param for net in Gnets for param in list(net.parameters())], lr=opt.lrG, betas=(opt.beta1, 0.999))
-optimizerD = optim.Adam(netD.parameters(), lr=opt.lrD, betas=(opt.beta1, 0.999))#netD.parameters()
+optimizerG = optim.Adam([param for net in Gnets for param in list(net.parameters())], lr=opt.lrG, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)
+optimizerD = optim.Adam(netD.parameters(), lr=opt.lrD, betas=(opt.beta1, 0.999), weight_decay=opt.weight_decay)#netD.parameters()
 
 # for loggin the trainning
 tlog = TrainLogger("train_log", log_dir=opt.output_folder, csv=True, header=True, suppress_err=False)
