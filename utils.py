@@ -7,7 +7,6 @@ import PIL
 import torch.nn as nn
 from config import opt
 
-from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -86,6 +85,7 @@ if opt.zPeriodic:
   waveNumbers = initWave(opt.zPeriodic).to(device)
 
   class Waver(nn.Module):
+    
     def __init__(self):
       super(Waver, self).__init__()
       if opt.zGL > 0:
@@ -96,9 +96,14 @@ if opt.zPeriodic:
         self.learnedWN =  nn.Sequential(*layers)
       else:##static
         self.learnedWN = nn.Parameter(torch.zeros(opt.zPeriodic * 2).uniform_(-1, 1).unsqueeze(-1).unsqueeze(-1).unsqueeze(0) * 0.2)
-    def forward(self, c,GLZ=None):
+
+    def forward(self, c, zGL=None):
       if opt.zGL > 0:
-        return (waveNumbers + 5*self.learnedWN(GLZ)) * c
+        #c shape: (batch_size, 2*opt.zPeriodic, NZ, NZ)
+        #waveNumbers shape: (1, 2*opt.zPeriodic, 1, 1)
+        #self.learnedWN output shape : (batch_size, 2*opt.zPeriodic, NZ, NZ)
+        #returned shape will be : (batch_size, 2*opt.zPeriodic, NZ, NZ)
+        return (waveNumbers + 5*self.learnedWN(zGL)) * c
 
       return (waveNumbers + self.learnedWN) * c
   learnedWN = Waver()
@@ -107,22 +112,22 @@ else:
 
 ##inplace set noise
 def setNoise(noise):
-  noise=noise.detach()*1.0
+  noise = noise.detach() * 1.0
   noise.uniform_(-1, 1)  # normal_(0, 1)
   if opt.zGL:
-    noise[:, :opt.zGL] = noise[:, :opt.zGL, :1, :1].repeat(1, 1,noise.shape[2],noise.shape[3])
+    noise[:, :opt.zGL] = noise[:, :opt.zGL, :1, :1].repeat(1, 1, noise.shape[2], noise.shape[3])
   if opt.zPeriodic:
     xv, yv = np.meshgrid(np.arange(noise.shape[2]), np.arange(noise.shape[3]),indexing='ij')
     c = torch.FloatTensor(np.concatenate([xv[np.newaxis], yv[np.newaxis]], 0)[np.newaxis])
     c = c.repeat(noise.shape[0], opt.zPeriodic, 1, 1)
     c = c.to(device)
     # #now c has canonic coordinate system -- multiply by wave numbers
-    raw = learnedWN(c,noise[:, :opt.zGL])
-    #random offset
+    raw = learnedWN(c, noise[:, :opt.zGL])
+    #random phase offset , it mimics random positional extraction of patches from the real images
     offset = (noise[:, -opt.zPeriodic:, :1, :1] * 1.0).uniform_(-1, 1) * 6.28
     offset = offset.repeat(1, 1, noise.shape[2], noise.shape[3])
     wave = torch.sin(raw[:, ::2] + raw[:, 1::2] + offset)
-    noise[:,-opt.zPeriodic:] = wave
+    noise[:, -opt.zPeriodic:] = wave
   return noise
 
 def save_model(epoch, generator, generator_optimizer, discriminator, discriminator_optimizer, output_folder):
@@ -139,11 +144,6 @@ def save_model(epoch, generator, generator_optimizer, discriminator, discriminat
 
   torch.save(generator_optimizer.state_dict(), optimizer_output_path)
   
-  ##OPTIONAL
-  ##save/load model for later use if desired
-  #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.output_folder, epoch*0,desc)
-  #torch.save(netU.state_dict(),outModelName )
-  #netU.load_state_dict(torch.load(outModelName))
 
 def plot_loss(log_dir):
   plt.figure(figsize=(5,5))

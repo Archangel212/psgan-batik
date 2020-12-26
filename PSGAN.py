@@ -45,7 +45,7 @@ criterion = nn.BCELoss()
 ngf = int(opt.ngf)
 ndf = int(opt.ndf)
 
-nz=opt.zGL+opt.zLoc+opt.zPeriodic
+nz = opt.zGL + opt.zLoc + opt.zPeriodic
 NZ = opt.image_size//2**opt.nDepG
 noise = torch.FloatTensor(opt.batch_size, nz, NZ, NZ)
 fixnoise = torch.FloatTensor(opt.batch_size, nz, NZ*4, NZ*4)
@@ -67,7 +67,7 @@ for net in [netD] + Gnets:
   except Exception as e:
     print (e,"weightinit")
   pass
-  net=net.to(device)
+  net = net.to(device)
   print(net)
 
 

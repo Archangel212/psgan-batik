@@ -41,20 +41,20 @@ class Discriminator(nn.Module):
         layers = []
         of = ncIn
         for i in range(nDepG):
-            if i==nDepG-1:
-                nf=1
+            if i == nDepG-1:
+                nf= 1
             else:
                 nf = ndf*2**i
             layers+=[nn.Conv2d(of, nf, 5, 2, 2)]##needs input 161 #hmm, also worls loke this
-            if i !=0 and i !=nDepG-1:
+            if i != 0 and i != nDepG-1:
                 if True:#not opt.WGAN:
-                    layers+=[norma(nf )]
+                    layers += [norma(nf)]
 
             if i < nDepG -1:
-                layers+=[nn.LeakyReLU(0.2, inplace=True)]
+                layers += [nn.LeakyReLU(0.2, inplace=True)]
             else:
                 if bSigm:
-                    layers+=[nn.Sigmoid()]
+                    layers += [nn.Sigmoid()]
             of = nf
         self.main = nn.Sequential(*layers)
 
@@ -69,7 +69,7 @@ class NetG(nn.Module):
     # @param ngf is channels of first layer, doubled up after every stride operation, or halved after upsampling
     # @param nDepG is depth, both of decoder and of encoder
     # @param nz is dimensionality of stochastic noise we add
-    def __init__(self, ngf, nDepG, nz,nc=3):
+    def __init__(self, ngf, nDepG, nz, nc=3):
         super(NetG, self).__init__()
 
         of = nz
