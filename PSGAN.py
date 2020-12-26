@@ -45,14 +45,12 @@ criterion = nn.BCELoss()
 ngf = int(opt.ngf)
 ndf = int(opt.ndf)
 
-nz = opt.zGL + opt.zLoc + opt.zPeriodic
-NZ = opt.image_size//2**opt.nDepG
-noise = torch.FloatTensor(opt.batch_size, nz, NZ, NZ)
-fixnoise = torch.FloatTensor(opt.batch_size, nz, NZ*4, NZ*4)
+noise = torch.FloatTensor(opt.batch_size, opt.nz, opt.NZ, opt.NZ)
+fixnoise = torch.FloatTensor(opt.batch_size, opt.nz, opt.NZ*4, opt.NZ*4)
 
 netD = Discriminator(ndf, opt.nDepD)
 ##################################
-netG = NetG(ngf, opt.nDepG, nz)
+netG = NetG(ngf, opt.nDepG, opt.nz)
 print(NetG, netD)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ("device",device)
