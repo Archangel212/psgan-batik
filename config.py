@@ -25,7 +25,7 @@ parser.add_argument('--niter', type=int, default=100, help='number of epochs to 
 parser.add_argument('--lrG', type=float, default=0.0001, help='learning rate for Generator, default=0.0002')
 parser.add_argument('--lrD', type=float, default=0.0004, help='learning rate for Discriminator, default=0.0002')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
-parser.add_argument('--weight_decay', type=float, default=1e-8, help='weight decay for adam default 0')
+parser.add_argument('--weight_decay', type=float, default=0, help='weight decay for adam default 0')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
 parser.add_argument('--dIter', type=int, default=1, help='number of Discriminator steps -- for 1 Generator step')
 ##set to true if wanna use WGAN
@@ -37,10 +37,6 @@ parser.add_argument('--zPeriodic', type=int, default=3,help='periodic spatial wa
 parser.add_argument('--first_noise', type=bool, default=False,help='stochastic noise at bottleneck or input of Unet')
 opt = parser.parse_args()
 
-nz = opt.zGL + opt.zLoc + opt.zPeriodic
-NZ = opt.image_size//2**opt.nDepG
-opt.nz = nz
-opt.NZ = NZ
 
 
 
