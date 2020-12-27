@@ -86,13 +86,15 @@ if opt.zPeriodic:
 
   class Waver(nn.Module):
     
-    def __init__(self):
+    def __init__(self, input_size=(25, 20, 5, 5)):
       super(Waver, self).__init__()
       if opt.zGL > 0:
         K = 60
-        layers = [nn.Conv2d(opt.zGL, K, 1)]
+        batch_size, zGl, NZ, NZ = input_size
+        layers = [nn.Flatten(start_dim=0, end_dim=-1)]
+        layers += [nn.Linear(batch_size * zGl * NZ * NZ, K)]
         layers += [nn.ReLU(True)]
-        layers += [nn.Conv2d(K, 2*opt.zPeriodic, 1)]
+        layers += [nn.Linear(K, batch_size * 2 * opt.zPeriodic * NZ * NZ)]
         self.learnedWN =  nn.Sequential(*layers)
       else:##static
         self.learnedWN = nn.Parameter(torch.zeros(opt.zPeriodic * 2).uniform_(-1, 1).unsqueeze(-1).unsqueeze(-1).unsqueeze(0) * 0.2)
@@ -101,12 +103,14 @@ if opt.zPeriodic:
       if opt.zGL > 0:
         #c shape: (batch_size, 2*opt.zPeriodic, NZ, NZ)
         #waveNumbers shape: (1, 2*opt.zPeriodic, 1, 1)
-        #self.learnedWN output shape : (batch_size, 2*opt.zPeriodic, NZ, NZ)
+        #self.learnedWN(zGL) output shape : (batch_size, 2*opt.zPeriodic, NZ, NZ)
         #returned shape will be : (batch_size, 2*opt.zPeriodic, NZ, NZ)
-        return (waveNumbers + 5*self.learnedWN(zGL)) * c
+        learned_wavenumbers = self.learnedWN(zGL).view(opt.batch_size, 2*opt.zPeriodic, opt.NZ, opt.NZ)
+
+        return (waveNumbers + 5*learned_wavenumbers) * c
 
       return (waveNumbers + self.learnedWN) * c
-  learnedWN = Waver()
+  learnedWN = Waver(input_size=(opt.batch_size, opt.zGL, opt.NZ, opt.NZ))
 else:
   learnedWN = None
 
