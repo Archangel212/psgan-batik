@@ -16,7 +16,7 @@ msg="Training ${batik_dataset_name} with ${experiment_name}"
 
 git add --all
 git commit -m "$msg"
-git push 
+git push -f
 
 echo "Finished" $msg
 

@@ -103,7 +103,7 @@ for epoch in range(opt.niter):
     textures = textures.to(device)
 
     for texture in textures:
-      texture = texture + torch.normal(mean=0, std=std, size=texture.size()[1:])
+      texture = texture + torch.normal(mean=0, std=std, size=texture.size()[1:], device=device)
 
     output = netD(textures)
     errD_real = criterion(output, output.detach()*0 + real_label)
