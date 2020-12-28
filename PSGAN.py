@@ -93,6 +93,7 @@ for epoch in range(opt.niter):
   D_G_z1 = 0.0
   D_G_z2 = 0.0
 
+  std = 0.1
   for i, data in enumerate(dataloader, 0):
     t0 = time.time()
     sys.stdout.flush()
@@ -100,6 +101,10 @@ for epoch in range(opt.niter):
     netD.zero_grad()
     textures, _ = data
     textures = textures.to(device)
+
+    for texture in textures:
+      texture = texture + torch.normal(mean=0, std=std, size=texture.size()[1:])
+
     output = netD(textures)
     errD_real = criterion(output, output.detach()*0 + real_label)
     errD_real.backward()
