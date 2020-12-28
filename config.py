@@ -20,7 +20,7 @@ parser.add_argument('--nDepG', type=int, default=5,help='depth of Unet Generator
 parser.add_argument('--nDepD', type=int, default=5,help='depth of DiscrimblendMoinator')
 parser.add_argument('--nBlocks', type=int, default=0,help='additional res blocks for complexity in the unet')
 parser.add_argument('--Ubottleneck', type=int, default=-1,help='Unet bottleneck, leave negative for default wide bottleneck')
-##Optimisation parametersfalp
+##Optimisation parameters
 parser.add_argument('--niter', type=int, default=100, help='number of epochs to train for')
 parser.add_argument('--lrG', type=float, default=0.0002, help='learning rate for Generator, default=0.0002')
 parser.add_argument('--lrD', type=float, default=0.0002, help='learning rate for Discriminator, default=0.0002')
@@ -35,6 +35,7 @@ parser.add_argument('--zLoc', type=int, default=40,help='noise channels, sampled
 parser.add_argument('--zGL', type=int, default=20,help='noise channels, identical on every spatial position')
 parser.add_argument('--zPeriodic', type=int, default=3,help='periodic spatial waves')
 parser.add_argument('--first_noise', type=bool, default=False,help='stochastic noise at bottleneck or input of Unet')
+parser.add_argument('--std_instance_noise', type=float, default=0.1,help='standard deviation of instance noise for real images default 0.1')
 opt = parser.parse_args()
 
 nz = opt.zGL + opt.zLoc + opt.zPeriodic
