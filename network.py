@@ -89,7 +89,7 @@ class NetG(nn.Module):
                 layers += [nn.Tanh()]
             else:
                 layers += [norma(nf)]
-                layers += [nn.ReLU(True)]
+                layers += [nn.LeakyReLU(0.2, inplace=True)]
             of = nf
         self.G = nn.Sequential(*layers)
 
