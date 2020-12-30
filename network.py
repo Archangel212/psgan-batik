@@ -7,10 +7,10 @@ norma = nn.BatchNorm2d
 
 def calc_gradient_penalty(netD, real_data, fake_data):
     from torch import autograd
-    LAMBDA=1
-    BATCH_SIZE=fake_data.shape[0]
+    LAMBDA = 1
+    BATCH_SIZE = fake_data.shape[0]
     alpha = torch.rand(BATCH_SIZE).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    device=real_data.get_device()
+    device = real_data.device.type
     alpha = alpha.to(device)
     interpolates = alpha * real_data + ((1 - alpha) * fake_data)
     disc_interpolates = netD(interpolates)
