@@ -129,8 +129,8 @@ for epoch in range(opt.niter):
     for net in Gnets:
       net.zero_grad()
 
-    # noise = setNoise(noise)
-    # fake = netG(noise)
+    noise = setNoise(noise)
+    fake = netG(noise)
     output = netD(fake)
     errG = criterion(output, output.detach()*0 + real_label)
     errG.backward()
