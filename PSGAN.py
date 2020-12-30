@@ -32,8 +32,8 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 cudnn.benchmark = True
 
-canonicT=[transforms.RandomCrop(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-mirrorT= []
+canonicT = [transforms.RandomCrop(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+mirrorT = []
 if opt.mirror:
   mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
 transformTex = transforms.Compose(mirrorT+canonicT)
@@ -129,8 +129,8 @@ for epoch in range(opt.niter):
     for net in Gnets:
       net.zero_grad()
 
-    noise = setNoise(noise)
-    fake = netG(noise)
+    # noise = setNoise(noise)
+    # fake = netG(noise)
     output = netD(fake)
     errG = criterion(output, output.detach()*0 + real_label)
     errG.backward()
