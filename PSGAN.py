@@ -102,9 +102,7 @@ for epoch in range(opt.niter):
     textures = textures.to(device)
 
     #apply instance noise  
-    for idx,texture in enumerate(textures):
-      textures[idx] = texture + torch.normal(mean=0, std=opt.std_instance_noise, size=texture.size()[1:], device=device)
-      
+    textures = textures + torch.normal(mean=0, std=opt.std_instance_noise, size=textures.size(), device=device)
 
     output = netD(textures)
     errD_real = criterion(output, output.detach()*0 + real_label)
@@ -131,8 +129,8 @@ for epoch in range(opt.niter):
     for net in Gnets:
       net.zero_grad()
 
-    noise = setNoise(noise)
-    fake = netG(noise)
+    # noise = setNoise(noise)
+    # fake = netG(noise)
     output = netD(fake)
     errG = criterion(output, output.detach()*0 + real_label)
     errG.backward()
