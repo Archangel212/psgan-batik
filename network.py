@@ -42,7 +42,7 @@ class Discriminator(nn.Module):
         of = ncIn
         for i in range(nDepG):
             if i == nDepG-1:
-                nf= 1
+                nf = 1
             else:
                 nf = ndf*2**i
             layers+=[nn.Conv2d(of, nf, 5, 2, 2)]##needs input 161 #hmm, also worls loke this
