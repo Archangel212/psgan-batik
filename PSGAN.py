@@ -115,6 +115,7 @@ for epoch in range(opt.niter):
       optimizerD.step()
 
 
+    netD.zero_grad()
     # train with fake
     fake = netG(noise)
     output = netD(fake.detach())
