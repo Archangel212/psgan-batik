@@ -1,5 +1,5 @@
-batik_dataset_name=16_Batik_500by500_homogenous_736-900
-experiment_name=MLP_samefakeimg_kernel=5,generator_upsampleConv2d,instance_noise_mean=0.1,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,learning_rate_g=2e-4,learning_rate_d=2e-4,batch_size=16,weight_decay=0
+batik_dataset_name=8_Batik_500by500_homogenous_736-900
+experiment_name=MLP_samefakeimg_d_iter=2,kernel=5,generator_upsampleConv2d,instance_noise_mean=0.1,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,learning_rate_g=2e-4,learning_rate_d=2e-4,batch_size=16,weight_decay=0
 # experiment_name=kernel=4,generator_leakyRelu=0.2,instance_noise_mean=0_std=0.1,label_smoothing=0.0955percent,learning_rate_g=1e-4,learning_rate_d=4e-4
 
 #make directory for batik dataset if it didn't exist in log directory 

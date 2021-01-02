@@ -104,10 +104,11 @@ for epoch in range(opt.niter):
     #apply instance noise  
     textures = textures + torch.normal(mean=0, std=opt.std_instance_noise, size=textures.size(), device=device)
 
-    output = netD(textures)
-    errD_real = criterion(output, output.detach()*0 + real_label)
-    errD_real.backward()
-    D_x = output.mean().item()
+    for iteration in range(opt.d_iter):
+      output = netD(textures)
+      errD_real = criterion(output, output.detach()*0 + real_label)
+      errD_real.backward()
+      D_x = output.mean().item()
 
     # train with fake
     noise = setNoise(noise)
