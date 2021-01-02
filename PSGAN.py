@@ -112,18 +112,19 @@ for epoch in range(opt.niter):
       errD_real = criterion(output, output.detach()*0 + real_label)
       errD_real.backward()
       D_x = output.mean().item()
-
-      # train with fake
-      fake = netG(noise)
-      output = netD(fake.detach())
-      errD_fake = criterion(output, output.detach()*0 + fake_label)
-      errD_fake.backward()
-      D_G_z1 = output.mean().item()
-
-      errD = errD_real + errD_fake
       optimizerD.step()
 
 
+    # train with fake
+    fake = netG(noise)
+    output = netD(fake.detach())
+    errD_fake = criterion(output, output.detach()*0 + fake_label)
+    errD_fake.backward()
+    D_G_z1 = output.mean().item()
+
+    errD = errD_real + errD_fake
+    optimizerD.step()
+    
     if opt.WGAN:
       gradient_penalty = calc_gradient_penalty(netD, textures, fake[:textures.shape[0]])##for case fewer textures images
       gradient_penalty.backward()
