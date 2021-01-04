@@ -1,6 +1,8 @@
 batik_dataset_name=8_Batik_500by500_homogenous_736-900
-experiment_name=MLP_samefakeimg_d_iter_reallabel=2_optimD_step_reallabel_fakelabel_zerograd_at_both_realandfake,kernel=5,generator_upsampleConv2d,instance_noise_mean=0.1,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,learning_rate_g=2e-4,learning_rate_d=2e-4,batch_size=16,weight_decay=0
-# experiment_name=kernel=4,generator_leakyRelu=0.2,instance_noise_mean=0_std=0.1,label_smoothing=0.0955percent,learning_rate_g=1e-4,learning_rate_d=4e-4
+
+model_hyperparameters=kernel=5,generator_upsampleConv2d,instance_noise_mean=0.1,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,learning_rate_g=2e-4,learning_rate_d=2e-4,batch_size=16,weight_decay=0
+model_state=MLP_samefakeimg_d_iter_reallabel=2_optimD_step_reallabel_fakelabel_zerograd_at_both_realandfake
+experiment_name="$model_hyperparameters/$model_state"  
 
 #make directory for batik dataset if it didn't exist in log directory 
 mkdir -p ./log/$batik_dataset_name
