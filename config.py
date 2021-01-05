@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 
 ##data path and loading parameters
 parser.add_argument('--texture_path', default='', help='path to texture image folder')
-parser.add_argument('--mirror', type=bool, default=False,help='augment style image distribution for mirroring')
+parser.add_argument('--mirror', type=bool, default=True,help='augment style image distribution for mirroring')
 parser.add_argument('--texture_scale', type=float, default=1.0,help='scale texture images')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=0)#0 means a single main process
 parser.add_argument('--output_folder', default='.', help='folder to output images and model checkpoints')

@@ -7,15 +7,15 @@ experiment_name="$model_hyperparameters/$model_state"
 #make directory for batik dataset if it didn't exist in log directory 
 mkdir -p ./log/$batik_dataset_name
 
-python PSGAN.py --texture_path batik_dataset/$batik_dataset_name --output_folder ./log/$batik_dataset_name/$experiment_name >> ./log/$batik_dataset_name/$experiment_name.txt
+python PSGAN.py --texture_path batik_dataset/$batik_dataset_name --output_folder ./log/$batik_dataset_name/$experiment_name >> ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt
 
 
 #tail the log to get time lapse
-cat ./log/$batik_dataset_name/$experiment_name.txt | tail -20 > "./log/$batik_dataset_name/$experiment_name/$experiment_name.txt"
-rm ./log/$batik_dataset_name/$experiment_name.txt
+cat ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt | tail -1 > "./log/$batik_dataset_name/$experiment_name/$model_state.txt"
+rm ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt
 
 #change log from txt to jpg format
-soffice --convert-to jpg ./log/$batik_dataset_name/$experiment_name/$experiment_name.txt --outdir ./log/$batik_dataset_name/$experiment_name/
+soffice --convert-to jpg ./log/$batik_dataset_name/$experiment_name/$model_state.txt --outdir ./log/$batik_dataset_name/$experiment_name/
 
 msg="Training ${batik_dataset_name} with ${experiment_name}"
 
