@@ -32,7 +32,7 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 cudnn.benchmark = True
 
-canonicT = [transforms.RandomCrop(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+canonicT = [transforms.Resize(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 mirrorT = []
 if opt.mirror:
   mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
@@ -97,26 +97,20 @@ for epoch in range(opt.niter):
     t0 = time.time()
     sys.stdout.flush()
     # train with real
-    # netD.zero_grad()
+    netD.zero_grad()
     textures, _ = data
     textures = textures.to(device)
 
     #apply instance noise  
     textures = textures + torch.normal(mean=0, std=opt.std_instance_noise, size=textures.size(), device=device)
-    noise = setNoise(noise)
 
-    for iteration in range(opt.d_iter):
-      netD.zero_grad()
-      
-      output = netD(textures)
-      errD_real = criterion(output, output.detach()*0 + real_label)
-      errD_real.backward()
-      D_x = output.mean().item()
-      optimizerD.step()
+    output = netD(textures)
+    errD_real = criterion(output, output.detach()*0 + real_label)
+    errD_real.backward()
+    D_x = output.mean().item()
 
-
-    netD.zero_grad()
     # train with fake
+    noise = setNoise(noise)
     fake = netG(noise)
     output = netD(fake.detach())
     errD_fake = criterion(output, output.detach()*0 + fake_label)
@@ -124,12 +118,11 @@ for epoch in range(opt.niter):
     D_G_z1 = output.mean().item()
 
     errD = errD_real + errD_fake
-    optimizerD.step()
-    
     if opt.WGAN:
       gradient_penalty = calc_gradient_penalty(netD, textures, fake[:textures.shape[0]])##for case fewer textures images
       gradient_penalty.backward()
 
+    optimizerD.step()
     if i > 0 and opt.WGAN and i % opt.dIter != 0:
       continue ##critic steps to 1 GEN steps
 

@@ -27,7 +27,7 @@ parser.add_argument('--lrD', type=float, default=0.0002, help='learning rate for
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
 parser.add_argument('--weight_decay', type=float, default=0, help='weight decay for adam default 0')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--d_iter', type=int, default=2, help='number of Discriminator steps -- for 1 Generator step')
+parser.add_argument('--dIter', type=int, default=1, help='number of Discriminator steps -- for 1 Generator step')
 ##set to true if wanna use WGAN
 parser.add_argument('--WGAN', type=bool, default=False,help='use WGAN-GP adversarial loss')
 ##noise parameters
