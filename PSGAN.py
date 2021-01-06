@@ -32,7 +32,7 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 cudnn.benchmark = True
 
-canonicT = [transforms.Resize(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+canonicT = [transforms.RandomCrop(opt.image_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 mirrorT = []
 if opt.mirror:
   mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
