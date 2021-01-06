@@ -6,7 +6,7 @@ model_state=MLP_samefakeimg,No_Random_Cropping,Resize_dataset=160,RandVerFlip=0.
 experiment_name="$model_hyperparameters/$model_state"  
 
 #make directory for batik dataset if it didn't exist in log directory 
-mkdir -p ./log/$batik_dataset_name
+mkdir -p ./log/$batik_dataset_name/$experiment_name
 
 python PSGAN.py --texture_path batik_dataset/$batik_dataset_name --output_folder ./log/$batik_dataset_name/$experiment_name >> ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt
 
