@@ -17,7 +17,8 @@ parser.add_argument('--image_size', type=int, default=160, help='the height / wi
 parser.add_argument('--ngf', type=int, default=128,help='number of channels of generator (at largest spatial resolution)')
 parser.add_argument('--ndf', type=int, default=128,help='number of channels of discriminator (at largest spatial resolution)')
 parser.add_argument('--nDepG', type=int, default=5,help='depth of Unet Generator')
-parser.add_argument('--nDepD', type=int, default=5,help='depth of DiscrimblendMoinator')
+parser.add_argument('--nDepD', type=int, default=5,help='depth of Discriminator')
+parser.add_argument('--BN_D', type=bool, default=False,help='Batch Norm of Discriminator, default is True')
 parser.add_argument('--nBlocks', type=int, default=0,help='additional res blocks for complexity in the unet')
 parser.add_argument('--Ubottleneck', type=int, default=-1,help='Unet bottleneck, leave negative for default wide bottleneck')
 ##Optimisation parameters

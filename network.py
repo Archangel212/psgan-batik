@@ -47,7 +47,7 @@ class Discriminator(nn.Module):
                 nf = ndf*2**i
             layers+=[nn.Conv2d(of, nf, 5, 2, 2)]##needs input 161 #hmm, also worls loke this
             if i != 0 and i != nDepG-1:
-                if True:#not opt.WGAN:
+                if opt.BN_D:#not opt.WGAN:
                     layers += [norma(nf)]
 
             if i < nDepG -1:
