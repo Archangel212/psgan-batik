@@ -11,7 +11,7 @@ python PSGAN.py --texture_path batik_dataset/$batik_dataset_name --output_folder
 
 
 #tail the log to get time lapse
-cat ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt | tail -1 > "./log/$batik_dataset_name/$experiment_name/$model_state.txt"
+cat ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt | tail -20 > "./log/$batik_dataset_name/$experiment_name/$model_state.txt"
 rm ./log/$batik_dataset_name/$model_hyperparameters/$model_state.txt
 
 #change log from txt to jpg format
