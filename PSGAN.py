@@ -162,7 +162,7 @@ for epoch in range(opt.niter):
       #torch.save(netU.state_dict(),outModelName )
       #netU.load_state_dict(torch.load(outModelName))
 
-    elif (epoch % 1 == 0 or epoch == (opt.niter - 1)) and (i == len(dataloader) - 1):
+    elif (epoch % 100 == 0 or epoch == (opt.niter - 1)) and (i == len(dataloader) - 1):
       save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 
   tlog.log([epoch+1, float(errD), float(errG), 
