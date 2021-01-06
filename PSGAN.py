@@ -162,10 +162,13 @@ for epoch in range(opt.niter):
       #torch.save(netU.state_dict(),outModelName )
       #netU.load_state_dict(torch.load(outModelName))
 
+    elif (epoch % 1 == 0 or epoch == (opt.niter - 1)) and (i == len(dataloader) - 1):
+      save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
+
   tlog.log([epoch+1, float(errD), float(errG), 
   float(D_x), float(D_G_z1), float(D_G_z2)])
 
-save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
+save_model(epoch+1, netG, optimizerG, netD, optimizerD, opt.output_folder)
 plot_loss(opt.output_folder)
 elapsed_time = time.time() - start
 print("Time for training: {} seconds".format(elapsed_time))

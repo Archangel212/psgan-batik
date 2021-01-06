@@ -141,8 +141,8 @@ def save_model(epoch, generator, generator_optimizer, discriminator, discriminat
   # discriminator.save(add_state={'optimizer_state_dict' : discriminator_optimizer.state_dict()},
   #             file_name=os.path.join(output_folder,'discriminator_param_fin_{}.pth'.format(epoch+1, datetime.now().strftime("%Y%m%d_%H-%M-%S"))))
 
-  model_output_path = os.path.join(output_folder,"generator_model_e{}.pth".format(epoch+1))
-  optimizer_output_path = os.path.join(output_folder,"generator_optimizer_e{}.pth".format(epoch+1))
+  model_output_path = os.path.join(output_folder,"generator_model_e{}.pth".format(epoch))
+  optimizer_output_path = os.path.join(output_folder,"generator_optimizer_e{}.pth".format(epoch))
 
   torch.save(generator.state_dict(), model_output_path)
 

@@ -22,7 +22,7 @@ parser.add_argument('--BN_D', type=bool, default=False,help='Batch Norm of Discr
 parser.add_argument('--nBlocks', type=int, default=0,help='additional res blocks for complexity in the unet')
 parser.add_argument('--Ubottleneck', type=int, default=-1,help='Unet bottleneck, leave negative for default wide bottleneck')
 ##Optimisation parameters
-parser.add_argument('--niter', type=int, default=100, help='number of epochs to train for')
+parser.add_argument('--niter', type=int, default=500, help='number of epochs to train for')
 parser.add_argument('--lrG', type=float, default=0.0002, help='learning rate for Generator, default=0.0002')
 parser.add_argument('--lrD', type=float, default=0.0002, help='learning rate for Discriminator, default=0.0002')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
