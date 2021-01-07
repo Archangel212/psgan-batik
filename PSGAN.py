@@ -164,7 +164,7 @@ for epoch in range(opt.niter):
 
 
   if epoch % 100 == 0 or epoch == (opt.niter - 1):
-      save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
+    save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 
   tlog.log([epoch+1, float(errD), float(errG), 
   float(D_x), float(D_G_z1), float(D_G_z2)])
