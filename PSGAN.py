@@ -38,7 +38,7 @@ if opt.mirror:
   mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
 transformTex = transforms.Compose(mirrorT+canonicT)
 dataset = TextureDataset(opt.texture_path, transformTex, opt.texture_scale)
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers = int(opt.workers))
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=opt.shuffle_ds, num_workers = int(opt.workers))
 
 criterion = nn.BCELoss()
 

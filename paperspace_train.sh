@@ -1,8 +1,8 @@
 batik_dataset_name=8_Batik_500by500_homogenous_736-900
 
 #separate model hyperparameters and model state into two recursive directories
-model_hyperparameters=kernel=5,G_upsampleConv2d,instance_noise_mean=0.1,zl_dim=40,zg_dim=20,zp_dim=3,ngf=64,ndf=64,batch_size=16
-model_state=MLP_samefakeimg
+model_hyperparameters=kernel=5,G_upsampleConv2d,instance_noise_mean=0.1,zl_dim=40,zg_dim=20,zp_dim=3,ngf=64,ndf=64,batch_size=8
+model_state=MLP_samefakeimg,shuffle_ds=False
 experiment_name="$model_hyperparameters/$model_state"  
 
 #make directory for batik dataset if it didn't exist in log directory 
