@@ -12,6 +12,7 @@ parser.add_argument('--texture_scale', type=float, default=1.0,help='scale textu
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=0)#0 means a single main process
 parser.add_argument('--output_folder', default='.', help='folder to output images and model checkpoints')
 ##neural network parameters
+parser.add_argument('--kernel_size', type=int, default=7, help='size of kernel, default 5')
 parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
 parser.add_argument('--image_size', type=int, default=160, help='the height / width of the input image to network')
 parser.add_argument('--shuffle_ds', type=bool, default=False, help='shuffle dataset, default is True')

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from config import opt
 from torchvision import models
+from config import opt
 
 norma = nn.BatchNorm2d
 
@@ -45,7 +46,7 @@ class Discriminator(nn.Module):
                 nf = 1
             else:
                 nf = ndf*2**i
-            layers+=[nn.Conv2d(of, nf, 5, 2, 2)]##needs input 161 #hmm, also worls loke this
+            layers+=[nn.Conv2d(of, nf, opt.kernel_size, 2, 2)]##needs input 161 #hmm, also worls loke this
             if i != 0 and i != nDepG-1:
                 if opt.BN_D:#not opt.WGAN:
                     layers += [norma(nf)]
@@ -84,7 +85,7 @@ class NetG(nn.Module):
                 layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
 
             layers += [nn.Upsample(scale_factor=2, mode='nearest')]  # nearest is default anyway
-            layers += [nn.Conv2d(of, nf, 5, 1, 2)]
+            layers += [nn.Conv2d(of, nf, opt.kernel_size, 1, 2)]
             if i == nDepG - 1:
                 layers += [nn.Tanh()]
             else:
@@ -132,7 +133,7 @@ class NetUskip(nn.Module):
             if i >0 and self.bCopyIn:##add coordinates
                 of +=2#ncIn
         
-            layers+=[nn.Conv2d(of, nf, 5, 2, 2)]
+            layers+=[nn.Conv2d(of, nf, opt.kernel_size, 2, 2)]
             if i !=0:
                 layers+=[norma(nf )]
             if i < self.nDepG -1:
@@ -161,7 +162,7 @@ class NetUskip(nn.Module):
                 layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
 
             layers +=[nn.Upsample(scale_factor=2, mode='nearest')]#nearest is default anyway
-            layers+=[nn.Conv2d(of,nf, 5, 1, 2)]
+            layers+=[nn.Conv2d(of,nf, opt.kernel_size, 1, 2)]
             if i == nDepG-1:
                 if bTanh:
                     layers+=[nn.Tanh()]
@@ -203,7 +204,7 @@ class NetUskip(nn.Module):
         return x
 
 
-KER=5
+KER=opt.kernel_size
 class ResnetBlock(nn.Module):
     def __init__(self, dim, padding_type, norm_layer, use_dropout, use_bias):
         super(ResnetBlock, self).__init__()
