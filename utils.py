@@ -10,6 +10,8 @@ from config import opt
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+import random
+import math
 
 class TextureDataset(Dataset):
     """Dataset wrapping images from a random folder with textures
@@ -194,4 +196,16 @@ def plot_loss(log_dir):
   plt.savefig(os.path.join(loss_path,"D_output.jpg"))
   plt.close()
   
-  
+def smooth_real_labels(y, percentage=0.382):
+    
+  #randomize the label into range 0.7 to 1.2 according to GAN Hacks by S.Chintala
+  unraveled_y = y.view(-1)
+  len_unraveled_y = len(unraveled_y)
+  amount = math.ceil(len_unraveled_y*percentage)
+  random_idx = random.sample(range(len_unraveled_y), amount)
+
+  for i in range(len(unraveled_y)):
+    if i in random_idx:
+      unraveled_y[i] = 1 - 0.3 + (random.random() * 0.5)
+
+  return unraveled_y.view(y.shape)

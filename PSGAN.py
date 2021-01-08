@@ -3,7 +3,7 @@ import random
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
-from utils import TextureDataset, setNoise, learnedWN, save_model,plot_loss
+from utils import TextureDataset, setNoise, learnedWN, save_model,plot_loss,smooth_real_labels
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 import torch.nn as nn
@@ -105,7 +105,11 @@ for epoch in range(opt.niter):
     textures = textures + torch.normal(mean=0, std=opt.std_instance_noise, size=textures.size(), device=device)
 
     output = netD(textures)
-    errD_real = criterion(output, output.detach()*0 + real_label)
+    if opt.real_label_smoothing > 0:
+      #use label smoothing into real label
+      errD_real = criterion(output, smooth_real_labels(output.detach()*0 + real_label, percentage=opt.real_label_smoothing))
+    else:
+      errD_real = criterion(output, output.detach()*0 + real_label)
     errD_real.backward()
     D_x = output.mean().item()
 
@@ -163,7 +167,7 @@ for epoch in range(opt.niter):
       #netU.load_state_dict(torch.load(outModelName))
 
 
-  if epoch % 100 == 0 or epoch == (opt.niter - 1):
+  if epoch+1 % 100 == 0:
     save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 
   tlog.log([epoch+1, float(errD), float(errG), 

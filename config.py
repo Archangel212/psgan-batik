@@ -37,7 +37,9 @@ parser.add_argument('--zLoc', type=int, default=40,help='noise channels, sampled
 parser.add_argument('--zGL', type=int, default=20,help='noise channels, identical on every spatial position')
 parser.add_argument('--zPeriodic', type=int, default=3,help='periodic spatial waves')
 parser.add_argument('--first_noise', type=bool, default=False,help='stochastic noise at bottleneck or input of Unet')
+##GAN Hacks by Soumith Chintala
 parser.add_argument('--std_instance_noise', type=float, default=0.1,help='standard deviation of instance noise for real images default 0.1')
+parser.add_argument('--real_label_smoothing', type=float, default=0.05,help='smooth positive labels percentage, default 0')
 opt = parser.parse_args()
 
 nz = opt.zGL + opt.zLoc + opt.zPeriodic
