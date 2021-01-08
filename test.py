@@ -35,4 +35,17 @@ import math
 # print(input)
 # print(math.log(2))
 
-plot_loss("/Users/mac/Deep_Learning/SinGAN/psgan-batik/log/Batik_500by500_homogenous_736-900/v1_kernel=5,generator_upsampleConv2d,zl_dim=40,zg_dim=20,_dim=3,learning_rate_g=2e-4,learning_rate_d=2e-4")
+log_dir = "log"
+os.chdir(log_dir)
+batik_ds = [l for l in os.listdir('.')]
+
+for b in batik_ds:
+    if os.path.isdir(b):
+        os.chdir(b)
+        for model_hyperparameter in os.listdir(os.curdir):
+            print(model_hyperparameter)
+    os.chdir("../"+os.curdir)
+    # if os.path.isdir(b):
+    #     for exp_name in os.listdir(b):
+    #         print(exp_name)
+    
