@@ -24,7 +24,7 @@ parser.add_argument('--BN_D', type=bool, default=True,help='Batch Norm of Discri
 parser.add_argument('--nBlocks', type=int, default=0,help='additional res blocks for complexity in the unet')
 parser.add_argument('--Ubottleneck', type=int, default=-1,help='Unet bottleneck, leave negative for default wide bottleneck')
 ##Optimisation parameters
-parser.add_argument('--niter', type=int, default=500, help='number of epochs to train for')
+parser.add_argument('--niter', type=int, default=100, help='number of epochs to train for')
 parser.add_argument('--lrG', type=float, default=0.0002, help='learning rate for Generator, default=0.0002')
 parser.add_argument('--lrD', type=float, default=0.0002, help='learning rate for Discriminator, default=0.0002')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
@@ -36,7 +36,7 @@ parser.add_argument('--WGAN', type=bool, default=False,help='use WGAN-GP adversa
 ##noise parameters
 parser.add_argument('--zLoc', type=int, default=40,help='noise channels, sampled on each spatial position')
 parser.add_argument('--zGL', type=int, default=20,help='noise channels, identical on every spatial position')
-parser.add_argument('--zPeriodic', type=int, default=3,help='periodic spatial waves')
+parser.add_argument('--zPeriodic', type=int, default=0,help='periodic spatial waves')
 parser.add_argument('--first_noise', type=bool, default=False,help='stochastic noise at bottleneck or input of Unet')
 ##GAN Hacks by Soumith Chintala
 parser.add_argument('--std_instance_noise', type=float, default=0.1,help='standard deviation of instance noise for real images default 0.1')
