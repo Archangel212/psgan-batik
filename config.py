@@ -36,7 +36,7 @@ parser.add_argument('--WGAN', type=bool, default=False,help='use WGAN-GP adversa
 ##noise parameters
 parser.add_argument('--zLoc', type=int, default=40,help='noise channels, sampled on each spatial position')
 parser.add_argument('--zGL', type=int, default=20,help='noise channels, identical on every spatial position')
-parser.add_argument('--zPeriodic', type=int, default=6,help='periodic spatial waves')
+parser.add_argument('--zPeriodic', type=int, default=2,help='periodic spatial waves')
 parser.add_argument('--first_noise', type=bool, default=False,help='stochastic noise at bottleneck or input of Unet')
 ##GAN Hacks by Soumith Chintala
 parser.add_argument('--std_instance_noise', type=float, default=0.1,help='standard deviation of instance noise for real images default 0.1')
