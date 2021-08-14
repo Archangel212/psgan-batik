@@ -26,4 +26,4 @@ git push -f
 
 echo "Finished" $msg
 
-sudo poweroff
+#sudo poweroff
