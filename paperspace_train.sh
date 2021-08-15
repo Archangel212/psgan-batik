@@ -1,7 +1,7 @@
-batik_dataset_name=Batik_156_500by500_augmented
+batik_dataset_name=Batik_833_500by500_augmented
 
 #separate model hyperparameters and model state into two recursive directories
-model_hyperparameters=kernel=5,zl_dim=60,zg_dim=20,zp_dim=3,ngf=128,ndf=128,batch_size=16
+model_hyperparameters=kernel=5,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,batch_size=16
 model_state=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False
 experiment_name="$model_hyperparameters/$model_state"  
 
