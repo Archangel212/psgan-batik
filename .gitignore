@@ -3,3 +3,5 @@ __pycache__
 *.pth
 test
 test.py
+.DS_STORE
+requirements.txt
