@@ -54,7 +54,7 @@ class Discriminator(nn.Module):
 
             if i < nDepG -1:
                 layers += [nn.LeakyReLU(0.2, inplace=True)]
-                layers += [nn.Dropout(p=0.2)]
+                # layers += [nn.Dropout(p=0.2)]
             else:
                 if bSigm:
                     layers += [nn.Sigmoid()]
