@@ -1,4 +1,4 @@
-batik_dataset_name=8_Batik_500by500_homogenous_736-900
+batik_dataset_name=16_Batik_500by500_homogenous_736-900
 
 #separate model hyperparameters and model state into two recursive directories
 model_hyperparameters=kernel=5,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,batch_size=16
