@@ -91,7 +91,7 @@ if opt.zPeriodic:
     def __init__(self, input_size=(25, 20, 5, 5)):
       super(Waver, self).__init__()
       if opt.zGL > 0:
-        K = 60
+        K = 120
         batch_size, zGl, NZ, NZ = input_size
         layers = [nn.Flatten(start_dim=0, end_dim=-1)]
         layers += [nn.Linear(batch_size * zGl * NZ * NZ, K)]
