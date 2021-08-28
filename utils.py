@@ -109,7 +109,7 @@ if opt.zPeriodic:
         #returned shape will be : (batch_size, 2*opt.zPeriodic, NZ, NZ)
         learned_wavenumbers = self.learnedWN(zGL).view(opt.batch_size, 2*opt.zPeriodic, opt.NZ, opt.NZ)
 
-        return (waveNumbers + 5*learned_wavenumbers) * c
+        return (waveNumbers + 1*learned_wavenumbers) * c
 
       return (waveNumbers + self.learnedWN) * c
   learnedWN = Waver(input_size=(opt.batch_size, opt.zGL, opt.NZ, opt.NZ))
