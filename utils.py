@@ -123,10 +123,13 @@ def setNoise(noise):
   if opt.zGL:
     noise[:, :opt.zGL] = noise[:, :opt.zGL, :1, :1].repeat(1, 1, noise.shape[2], noise.shape[3])
   if opt.zPeriodic:
-    xv, yv = np.meshgrid(np.arange(noise.shape[2]), np.arange(noise.shape[3]),indexing='ij')
-    c = torch.FloatTensor(np.concatenate([xv[np.newaxis], yv[np.newaxis]], 0)[np.newaxis])
+    xv, yv = torch.meshgrid(
+      torch.arange(noise.shape[2], dtype=torch.float, device=device), 
+      torch.arange(noise.shape[3], dtype=torch.float, device=device), 
+    )
+    c = torch.cat((xv.unsqueeze(0), yv.unsqueeze(0)), 0).unsqueeze(0)
     c = c.repeat(noise.shape[0], opt.zPeriodic, 1, 1)
-    c = c.to(device)
+    
     # #now c has canonic coordinate system -- multiply by wave numbers
     raw = learnedWN(c, noise[:, :opt.zGL])
     #random phase offset , it mimics random positional extraction of patches from the real images
