@@ -141,3 +141,120 @@ class ResnetBlock(nn.Module):
     def forward(self, x):
         out = x + self.gamma*self.conv_block(x)
         return out
+
+
+#======================================= GANOISAIC branch ===========================================
+class NetED(nn.Module):
+    # @param nc is output channels
+    # @param ncIn is input channels
+    # @param ngf is channels of first layer, doubled up after every stride operation, or halved after upsampling
+    # @param nDep is depth, both of decoder and of encoder
+    # @param nz is dimensionality of stochastic noise we add
+    # @param NCbot can optionally specify the bottleneck size explicitly
+    # @param bCopyIn copies the input channels at every decoder level -- special skip connections
+    # @param bSkip turns skip connections btw encoder and decoder off
+    # @param bTanh turns nonlinearity on and off
+    def __init__(self, ngf, nDep, nz=0, Ubottleneck=-1, nc=3, ncIn=None, bTanh=True, lessD=0,bCopyIn=False):
+        super(NetED, self).__init__()
+        self.nDep = nDep
+        self.eblocks = nn.ModuleList()
+        self.dblocks = nn.ModuleList()
+        self.bCopyIn = bCopyIn
+
+        if Ubottleneck <= 0:
+            Ubottleneck = ngf * 2 ** (nDep - 1)
+
+        if ncIn is None:
+            of = nc
+        else:
+            of = ncIn  ##in some cases not an RGB conditioning
+
+        of += opt.first_noise * nz
+        for i in range(self.nDep):
+            layers = []
+            if i == self.nDep - 1:
+                nf = Ubottleneck
+            else:
+                nf = ngf * 2 ** i
+
+            layers += [nn.Conv2d(of, nf, 5, 2, 2)]
+            if i != 0:
+                layers += [norma(nf)]
+            if i < self.nDep - 1:
+                layers += [nn.LeakyReLU(0.2, inplace=True)]
+            else:
+                layers += [nn.Tanh()]
+            of = nf
+            block = nn.Sequential(*layers)
+            self.eblocks += [block]
+
+        ##first nDep layers
+        of = nz
+        for i in range(nDep + lessD):
+            layers = []
+            if i == nDep - 1:
+                nf = nc
+            else:
+                nf = ngf * 2 ** (nDep - 2 - i)
+            for j in range(opt.nBlocks):
+                layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
+
+            layers += [nn.Upsample(scale_factor=2, mode='nearest')]  # nearest is default anyway
+            layers += [nn.Conv2d(of, nf, 4 + 1, 1, 2)]
+            if i == nDep - 1:
+                if bTanh:
+                    layers += [nn.Tanh()]
+            else:
+                layers += [norma(nf)]
+                layers += [nn.ReLU(True)]
+            of = nf
+            block = nn.Sequential(*layers)
+            self.dblocks += [block]
+
+    ##encoder
+    def e(self,x):
+        for i in range(self.nDep):
+            x = self.eblocks[i].forward(x)
+        return x
+
+    def d(self,x):
+        for i in range(len(self.dblocks)):
+            x = self.dblocks[i].forward(x)
+        return x
+
+    def forward(self, input1, input2=None):
+        raise Exception
+
+class ColorReconstruction(nn.Module):
+    def __init__(self,ndf,nDep,nc=3):
+        super(ColorReconstruction, self).__init__()
+        layers = []
+        of = nc
+        nf=of
+        for i in range(nDep):
+            nf = ndf*2**i
+            layers+=[nn.Conv2d(of, nf, 1)]
+            layers+=[nn.LeakyReLU(0.2, inplace=True)]
+            of = nf
+        layers += [nn.Conv2d(nf,nc, 1)]##always RGB at the end
+        self.main = nn.Sequential(*layers)
+    def forward(self, input):
+        return self.main(input)
+
+##perceptual loss using VGG
+class PerceptualF(object):
+    def __init__(self,ilayer=17+7,device='cuda:0'):
+        self.vgg = models.vgg16(pretrained=True).to(device).eval()
+        print (self.vgg)
+        for param in self.vgg.parameters():
+            param.requires_grad = False
+        def transf(x):
+            return (x + 1) * 0.5
+        self.trans=transf
+        self.name=ilayer
+
+    def __call__(self, input):
+        input = self.trans(input)
+        layer= self.vgg.features[:self.name+1]##including that layer
+        vggF = layer(input)
+        return vggF*0.1

@@ -212,3 +212,99 @@ def smooth_real_labels(y, percentage=0.382):
       unraveled_y[i] = 1 - 0.3 + (random.random() * 0.5)
 
   return unraveled_y.view(y.shape)
+
+#======================================= GANOISAIC branch ===========================================
+
+def plotStats(a,path):
+  import matplotlib
+  matplotlib.use('Agg')
+  import matplotlib.pyplot as plt
+  plt.figure(figsize=(15,15))
+  names = ["pTrue", "pFake", "pFake2", "contentLoss I", "contentLoss I_M", "norm(alpha)", "entropy(A)", "tv(A)", "tv(alpha)", "diversity(A)"]
+  win=50##for running avg
+  for i in range(a.shape[1]):
+      if i <3:
+          ix=0
+      elif i <5:
+          ix =1
+      elif i >=5:
+          ix=i-3
+      plt.subplot(a.shape[1]-3+1,1,ix+1)
+      plt.plot(a[:,i],label= "err"+str(i)+"_"+names[i])
+      try:
+          av=np.convolve(a[:,i], np.ones((win,))/win, mode='valid')
+          plt.plot(av,label= "av"+str(i)+"_"+names[i],lw=3)
+      except Exception as e:
+          print ("ploterr",e)
+      plt.legend(loc="lower left")
+  plt.savefig(path+"plot.png")
+
+  def Mstring(v):
+      s=""
+      for i in range(v.shape[0]):
+          s+= names[i]+" "+str(v[i])+";"
+      return s
+
+  print("MEAN",Mstring(a.mean(0)))
+  print("MEAN",Mstring(a[-100:].mean(0)))
+  plt.close()
+
+def GaussKernel(sigma,wid=None):
+    if wid is None:
+        wid =2 * 2 * sigma + 1+10
+
+    def gaussian(x, mu, sigma):
+        return np.exp(-(float(x) - float(mu)) ** 2 / (2 * sigma ** 2))
+    def make_kernel(sigma):
+        # kernel radius = 2*sigma, but minimum 3x3 matrix
+        kernel_size = max(3, int(wid))
+        kernel_size = min(kernel_size,150)
+        mean = np.floor(0.5 * kernel_size)
+        kernel_1d = np.array([gaussian(x, mean, sigma) for x in range(kernel_size)])
+        # make 2D kernel
+        np_kernel = np.outer(kernel_1d, kernel_1d).astype(dtype=np.float32)
+        # normalize kernel by sum of elements
+        kernel = np_kernel / np.sum(np_kernel)
+        return kernel
+    ker = make_kernel(sigma)
+  
+    a = np.zeros((3,3,ker.shape[0],ker.shape[0])).astype(dtype=np.float32)
+    for i in range(3):
+        a[i,i] = ker
+    return a
+
+gsigma=1.##how much to blur - larger blurs more ##+"_sig"+str(gsigma)
+gwid=61
+kernel = torch.FloatTensor(GaussKernel(gsigma,wid=gwid)).to(device)##slow, pooling better
+def avgP(x):
+    return nn.functional.avg_pool2d(x,int(16))
+def avgG(x):
+    pad=nn.functional.pad(x,(gwid//2,gwid//2,gwid//2,gwid//2),'reflect')##last 2 dimensions padded
+    return nn.functional.conv2d(pad,kernel)##reflect pad should avoid border artifacts
+def contentLoss(a,b,netR,opt):
+    def nr(x):
+        return (x**2).mean()
+        return x.abs().mean()
+
+    if opt.cLoss==0:
+        a = avgG(a)
+        b = avgG(b)
+        return nr(a.mean(1) - b.mean(1))
+    if opt.cLoss==1:
+        a = avgP(a)
+        b = avgP(b)
+        return nr(a.mean(1) - b.mean(1))
+
+    if opt.cLoss==10:
+        return nr(netR(a)-netR(b))
+
+    if opt.cLoss==100:
+        return nr(netR(a)-b)
+    if opt.cLoss == 101:
+        return nr(avgG(netR(a)) - avgG(b))
+    if opt.cLoss == 102:
+        return nr(avgP(netR(a)) - avgP(b))
+    if opt.cLoss == 103:
+        return nr(avgG(netR(a)).mean(1) - avgG(b).mean(1))
+
+    raise Exception("NYI")
