@@ -6,22 +6,6 @@ from config import opt
 
 norma = nn.BatchNorm2d
 
-def calc_gradient_penalty(netD, real_data, fake_data):
-    from torch import autograd
-    LAMBDA = 1
-    BATCH_SIZE = fake_data.shape[0]
-    alpha = torch.rand(BATCH_SIZE).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    device = real_data.device.type
-    alpha = alpha.to(device)
-    interpolates = alpha * real_data + ((1 - alpha) * fake_data)
-    disc_interpolates = netD(interpolates)
-    gradients = autograd.grad(outputs=disc_interpolates, inputs=interpolates,
-                              grad_outputs=torch.ones(disc_interpolates.size()).to(device),
-                              create_graph=True, retain_graph=True, only_inputs=True)[0]
-    gradients = gradients.view(gradients.size(0), -1)
-    gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * LAMBDA
-    return gradient_penalty
-
 # custom weights initialization called on netG and netD
 def weights_init(m):
     classname = m.__class__.__name__
@@ -49,7 +33,7 @@ class Discriminator(nn.Module):
             layers += [nn.Conv2d(of, nf, opt.kernel_size, 2, 2)]##needs input 161 #hmm, also worls loke this
             # layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=False) ]
             if i != 0 and i != nDepG-1:
-                if opt.BN_D:#not opt.WGAN:
+                if opt.BN_D:
                     layers += [norma(nf)]
 
             if i < nDepG -1:
@@ -63,8 +47,6 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         output = self.main(input)
-        if opt.WGAN:
-            return output.mean(3).mean(2).unsqueeze(2).unsqueeze(3)
         return output#[:,:,1:-1,1:-1]
 
 ##################################################

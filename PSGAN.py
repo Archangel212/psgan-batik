@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 import torch.nn as nn
 import sys
-from network import weights_init, Discriminator, calc_gradient_penalty, NetG
+from network import weights_init, Discriminator, NetG
 from config import opt
 import time
 from train_logger import TrainLogger
@@ -122,12 +122,9 @@ for epoch in range(opt.niter):
     D_G_z1 = output.mean().item()
 
     errD = errD_real + errD_fake
-    if opt.WGAN:
-      gradient_penalty = calc_gradient_penalty(netD, textures, fake[:textures.shape[0]])##for case fewer textures images
-      gradient_penalty.backward()
 
     optimizerD.step()
-    if i > 0 and opt.WGAN and i % opt.dIter != 0:
+    if i > 0 and i % opt.dIter != 0:
       continue ##critic steps to 1 GEN steps
 
     for net in Gnets:

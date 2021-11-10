@@ -31,8 +31,6 @@ parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. de
 parser.add_argument('--weight_decay', type=float, default=0, help='weight decay for adam default 0')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
 parser.add_argument('--dIter', type=int, default=1, help='number of Discriminator steps -- for 1 Generator step')
-##set to true if wanna use WGAN
-parser.add_argument('--WGAN', type=bool, default=False,help='use WGAN-GP adversarial loss')
 ##noise parameters
 parser.add_argument('--zLoc', type=int, default=40,help='noise channels, sampled on each spatial position')
 parser.add_argument('--zGL', type=int, default=20,help='noise channels, identical on every spatial position')
