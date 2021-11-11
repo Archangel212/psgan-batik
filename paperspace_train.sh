@@ -29,7 +29,9 @@ training()
     echo "Finished" $msg
 }
 
-training 64_Batik_500by500_homogenous_736-900
-training 128_Batik_500by500_mix_736-900
+training 16_Batik_500by500_inhomogenous_1-34
+training 32_Batik_500by500_inhomogenous_1-34
+training 64_Batik_500by500_inhomogenous_1-34
+training 128_Batik_500by500_inhomogenous_1-34
 
 sudo poweroff
