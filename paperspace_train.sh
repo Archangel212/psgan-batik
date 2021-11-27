@@ -3,7 +3,7 @@ training()
     batik_dataset_name=$1
 
     #separate model hyperparameters and model state into two recursive directories
-    model_hyperparameters=kernel=5,zl_dim=40,zg_dim=20,zp_dim=3,ngf=128,ndf=128,batch_size=16
+    model_hyperparameters=kernel=5,zl_dim=20,zg_dim=40,zp_dim=4,ngf=64,ndf=64,batch_size=25
     model_state=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False,real_label_smoothing=1
     experiment_name="$model_hyperparameters/$model_state"  
 
@@ -29,9 +29,6 @@ training()
     echo "Finished" $msg
 }
 
-training 16_Batik_500by500_inhomogenous_1-34
-training 32_Batik_500by500_inhomogenous_1-34
-training 64_Batik_500by500_inhomogenous_1-34
-training 128_Batik_500by500_inhomogenous_1-34
+training 32_Kawung
 
 sudo poweroff

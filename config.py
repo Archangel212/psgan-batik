@@ -13,11 +13,11 @@ parser.add_argument('--workers', type=int, help='number of data loading workers'
 parser.add_argument('--output_folder', default='.', help='folder to output images and model checkpoints')
 ##neural network parameters
 parser.add_argument('--kernel_size', type=int, default=5, help='size of kernel, default 5')
-parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
+parser.add_argument('--batch_size', type=int, default=25, help='input batch size')
 parser.add_argument('--image_size', type=int, default=160, help='the height / width of the input image to network')
 parser.add_argument('--shuffle_ds', type=bool, default=False, help='shuffle dataset, default is True')
-parser.add_argument('--ngf', type=int, default=128,help='number of channels of generator (at largest spatial resolution)')
-parser.add_argument('--ndf', type=int, default=128,help='number of channels of discriminator (at largest spatial resolution)')
+parser.add_argument('--ngf', type=int, default=64,help='number of channels of generator (at largest spatial resolution)')
+parser.add_argument('--ndf', type=int, default=64,help='number of channels of discriminator (at largest spatial resolution)')
 parser.add_argument('--nDepG', type=int, default=5,help='depth of Unet Generator')
 parser.add_argument('--nDepD', type=int, default=5,help='depth of Discriminator')
 parser.add_argument('--BN_D', type=bool, default=True,help='Batch Norm of Discriminator, default is True')
@@ -32,9 +32,9 @@ parser.add_argument('--weight_decay', type=float, default=0, help='weight decay 
 parser.add_argument('--manualSeed', type=int, help='manual seed')
 parser.add_argument('--dIter', type=int, default=1, help='number of Discriminator steps -- for 1 Generator step')
 ##noise parameters
-parser.add_argument('--zLoc', type=int, default=40,help='noise channels, sampled on each spatial position')
-parser.add_argument('--zGL', type=int, default=20,help='noise channels, identical on every spatial position')
-parser.add_argument('--zPeriodic', type=int, default=3,help='periodic spatial waves')
+parser.add_argument('--zLoc', type=int, default=20,help='noise channels, sampled on each spatial position')
+parser.add_argument('--zGL', type=int, default=40,help='noise channels, identical on every spatial position')
+parser.add_argument('--zPeriodic', type=int, default=4,help='periodic spatial waves')
 parser.add_argument('--first_noise', type=bool, default=False,help='stochastic noise at bottleneck or input of Unet')
 ##GAN Hacks by Soumith Chintala
 parser.add_argument('--std_instance_noise', type=float, default=0.1,help='standard deviation of instance noise for real images default 0.1')
