@@ -30,9 +30,11 @@ class Discriminator(nn.Module):
                 nf = 1
             else:
                 nf = ndf*2**i
-            layers += [nn.Conv2d(of, nf, opt.kernel_size, 2, 2)]##needs input 161 #hmm, also worls loke this
+
             for j in range(opt.nBlocksD):
-                layers += [ResnetBlock(nf, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True) ]
+                layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True) ]
+                
+            layers += [nn.Conv2d(of, nf, opt.kernel_size, 2, 2)]##needs input 161 #hmm, also worls loke this
 
             if i != 0 and i != nDepG-1:
                 if opt.BN_D:
