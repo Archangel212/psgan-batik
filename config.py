@@ -21,8 +21,8 @@ parser.add_argument('--ndf', type=int, default=64,help='number of channels of di
 parser.add_argument('--nDepG', type=int, default=5,help='depth of Unet Generator')
 parser.add_argument('--nDepD', type=int, default=5,help='depth of Discriminator')
 parser.add_argument('--BN_D', type=bool, default=True,help='Batch Norm of Discriminator, default is True')
-parser.add_argument('--nBlocksD', type=int, default=1,help='additional res blocks for complexity in the unet on Discriminator')
-parser.add_argument('--nBlocksG', type=int, default=1,help='additional res blocks for complexity in the unet on Generator')
+parser.add_argument('--nBlocksD', type=int, default=0,help='additional res blocks for complexity in the unet on Discriminator')
+parser.add_argument('--nBlocksG', type=int, default=0,help='additional res blocks for complexity in the unet on Generator')
 parser.add_argument('--Ubottleneck', type=int, default=-1,help='Unet bottleneck, leave negative for default wide bottleneck')
 ##Optimisation parameters
 parser.add_argument('--niter', type=int, default=100, help='number of epochs to train for')

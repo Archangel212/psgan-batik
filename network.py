@@ -32,7 +32,7 @@ class Discriminator(nn.Module):
                 nf = ndf*2**i
 
             for j in range(opt.nBlocksD):
-                layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=True, use_bias=True) ]
+                layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True) ]
                 
             layers += [nn.Conv2d(of, nf, opt.kernel_size, 2, 2)]##needs input 161 #hmm, also worls loke this
 
@@ -70,7 +70,7 @@ class NetG(nn.Module):
             else:
                 nf = ngf * 2 ** (nDepG - 2 - i)
             for j in range(opt.nBlocksG):
-                layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
+                layers += [ResnetBlock(of, padding_type="reflect", norm_layer=norma, use_dropout=False, use_bias=True)]
 
             layers += [nn.Upsample(scale_factor=2, mode='nearest')]  # nearest is default anyway
             layers += [nn.Conv2d(of, nf, opt.kernel_size, 1, 2)]
