@@ -164,7 +164,7 @@ for epoch in range(opt.niter):
       #netU.load_state_dict(torch.load(outModelName))
 
 
-  if epoch+1 % 100 == 0:
+  if epoch+1 % 50 == 0:
     save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 
   tlog.log([epoch+1, float(errD), float(errG), 
