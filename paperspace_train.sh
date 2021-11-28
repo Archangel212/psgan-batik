@@ -31,14 +31,14 @@ training()
 
 #experiment 1
 model_hyperparameters_1=kernel=5,zl_dim=20,zg_dim=40,zp_dim=4,ngf=64,ndf=64,batch_size=25
-model_state_1=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False,real_label_smoothing=1,nBlocksD=1,nBlocksG=2
+model_state_1=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False,real_label_smoothing=1,nBlocksD=1,nBlocksG=1,nBlocksD_Dropout=0.5
 
 #experiment 1
 model_hyperparameters_2=kernel=5,zl_dim=20,zg_dim=40,zp_dim=4,ngf=64,ndf=64,batch_size=25
-model_state_2=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False,real_label_smoothing=1,nBlocksD=1,nBlocksG=3
+model_state_2=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False,real_label_smoothing=1,nBlocksD=1,nBlocksG=2,nBlocksD_Dropout=0.5
 
 
-training 32_Kawung $model_hyperparameters_1 $model_state_1 1 2
-training 32_Kawung $model_hyperparameters_2 $model_state_2 1 3
+training 32_Kawung $model_hyperparameters_1 $model_state_1 1 1
+training 32_Kawung $model_hyperparameters_2 $model_state_2 1 2
 
 sudo poweroff
