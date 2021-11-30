@@ -51,6 +51,16 @@ fixnoise = torch.FloatTensor(opt.batch_size, opt.nz, opt.NZ*4, opt.NZ*4)
 netD = Discriminator(ndf, opt.nDepD)
 ##################################
 netG = NetG(ngf, opt.nDepG, opt.nz)
+# netG = NetUskip(ngf,
+#         opt.nDepG,
+#         opt.nz,
+#         bSkip=True,
+#         nc=64,
+#         ncIn=None,
+#         bTanh=False,
+#         bCopyIn=False,
+#         Ubottleneck=opt.Ubottleneck
+#       )
 print(NetG, netD)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ("device",device)
@@ -164,7 +174,7 @@ for epoch in range(opt.niter):
       #netU.load_state_dict(torch.load(outModelName))
 
 
-  if epoch+1 % 50 == 0:
+  if epoch+1 % 100 == 0:
     save_model(epoch, netG, optimizerG, netD, optimizerD, opt.output_folder)
 
   tlog.log([epoch+1, float(errD), float(errG), 
