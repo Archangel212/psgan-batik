@@ -70,7 +70,7 @@ class NetG(nn.Module):
             else:
                 nf = ngf * 2 ** (nDepG - 2 - i)
             for j in range(opt.nBlocksG):
-                layers += [ResnetBlock(of, padding_type="zero", norm_layer=norma, use_dropout=False, use_bias=True)]
+                layers += [ResnetBlock(of, padding_type="reflect", norm_layer=norma, use_dropout=False, use_bias=True)]
 
             layers += [nn.Upsample(scale_factor=2, mode='nearest')]  # nearest is default anyway
             layers += [nn.Conv2d(of, nf, opt.kernel_size, 1, 2)]
