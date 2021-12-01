@@ -1,0 +1,20 @@
+c on utils.py cuda:0
+zGL.device cuda:0
+[99/100][76/80]	LossD: 0.4198 LossG: 6.3588 D(x): 0.9324 D(G(z)): 0.0711 / 0.0184 time 0.4176
+noise.device on utils.py cuda:0
+c on utils.py cuda:0
+zGL.device cuda:0
+[99/100][77/80]	LossD: 0.5975 LossG: 3.8221 D(x): 0.7033 D(G(z)): 0.0524 / 0.0612 time 0.4153
+noise.device on utils.py cuda:0
+c on utils.py cuda:0
+zGL.device cuda:0
+[99/100][78/80]	LossD: 0.5280 LossG: 8.1201 D(x): 0.9903 D(G(z)): 0.1790 / 0.0024 time 0.4155
+noise.device on utils.py cuda:0
+c on utils.py cuda:0
+zGL.device cuda:0
+[99/100][79/80]	LossD: 0.3211 LossG: 8.2985 D(x): 0.9609 D(G(z)): 0.0189 / 0.0022 time 0.3940
+Time for training: 3601.521780014038 seconds
+noise.device cuda:0
+noise.device on utils.py cuda:0
+c on utils.py cuda:0
+zGL.device cuda:0
