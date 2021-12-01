@@ -1,6 +1,7 @@
 import os
 import torch
 from PIL import Image
+from torch._C import device
 from torchvision import transforms
 import numpy as np
 from prdc import compute_prdc
@@ -10,13 +11,15 @@ from network import NetG
 from utils import setNoise
 from config import opt
 from torchvision import utils as vutils
+import torchvision.models as models
 
 from config import opt
 
 
 class FeatureExtractorPytorch:
     def __init__(self):
-        self.model = torch.hub.load('pytorch/vision:v0.10.0', 'vgg16',pretrained=True)
+        # self.model = torch.hub.load('pytorch/vision:v0.10.0', 'vgg16',pretrained=True)
+        self.model = models.vgg16(pretrained=True)
 
         self.model.eval()
 
@@ -51,7 +54,7 @@ class FeatureExtractorPytorch:
 
         with torch.no_grad():
             feature = self.model(input_batch)[0]  # (1, 4096) -> (4096, )
-            feature = feature.detach().numpy()
+            feature = feature.cpu().detach().numpy()
         return feature / np.linalg.norm(feature)  # Normalize
 
 
@@ -82,14 +85,20 @@ os.makedirs(fake_images_path, exist_ok=True)
  
 #generate fake images from saved generator model
 def generate_fake_images():
-    model = torch.load(model_path, map_location=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
 
-    netG = NetG(64, 5, 64)
+    netG = NetG(64, 5, 64).cuda()
+    model = torch.load(model_path, map_location=device)
+
     netG.load_state_dict(model)
 
     netG.eval()
 
     noise = torch.FloatTensor(opt.batch_size, opt.nz, opt.NZ, opt.NZ)
+    noise = noise.to(device)
+    print("noise.device", noise.device)
+
     noise = setNoise(noise)
     fake = netG(noise)
 
@@ -97,7 +106,7 @@ def generate_fake_images():
         vutils.save_image(f, fake_images_path / "fake_{}.jpg".format(idx), normalize=True)
 
 
-    np.save(fake_images_path / "fake_images.npy", fake.detach().numpy())
+    np.save(fake_images_path / "fake_images.npy", fake.cpu().detach().numpy())
     return fake
 
 fake = generate_fake_images()
