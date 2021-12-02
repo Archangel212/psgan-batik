@@ -88,7 +88,7 @@ def generate_fake_images():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
 
-    netG = NetG(64, 5, 64).cuda()
+    netG = NetG(int(opt.ngf), opt.nDepG, opt.nz).to(device)
     model = torch.load(model_path, map_location=device)
 
     netG.load_state_dict(model)
@@ -97,7 +97,6 @@ def generate_fake_images():
 
     noise = torch.FloatTensor(opt.batch_size, opt.nz, opt.NZ, opt.NZ)
     noise = noise.to(device)
-    print("noise.device", noise.device)
 
     noise = setNoise(noise)
     fake = netG(noise)

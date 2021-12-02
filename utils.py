@@ -107,13 +107,12 @@ if opt.zPeriodic:
         #waveNumbers shape: (1, 2*opt.zPeriodic, 1, 1)
         #self.learnedWN(zGL) output shape : (batch_size, 2*opt.zPeriodic, NZ, NZ)
         #returned shape will be : (batch_size, 2*opt.zPeriodic, NZ, NZ)
-        print("zGL.device", zGL.device)
         learned_wavenumbers = self.learnedWN(zGL).view(opt.batch_size, 2*opt.zPeriodic, opt.NZ, opt.NZ)
 
         return (waveNumbers + 5*learned_wavenumbers) * c
 
       return (waveNumbers + self.learnedWN) * c
-  learnedWN = Waver(input_size=(opt.batch_size, opt.zGL, opt.NZ, opt.NZ))
+  learnedWN = Waver(input_size=(opt.batch_size, opt.zGL, opt.NZ, opt.NZ)).to(device)
 else:
   learnedWN = None
 
@@ -132,9 +131,6 @@ def setNoise(noise):
     c = c.repeat(noise.shape[0], opt.zPeriodic, 1, 1)
     
     # #now c has canonic coordinate system -- multiply by wave numbers
-    print("noise.device on utils.py", noise.device)
-    print("c on utils.py", c.device)
-    # print("noise.device on utils.py", noise.device)
     raw = learnedWN(c, noise[:, :opt.zGL])
     #random phase offset , it mimics random positional extraction of patches from the real images
     offset = (noise[:, -opt.zPeriodic:, :1, :1] * 1.0).uniform_(-1, 1) * 6.28
