@@ -42,10 +42,10 @@ model_hyperparameters_2=kernel=5,zl_dim=20,zg_dim=40,zp_dim=4,ngf=64,ndf=64,batc
 model_state_2=MLP,samefakeimg,G_upsampleConv2d,instance_noise_mean=0.1,shuffle_ds=False,real_label_smoothing=1,nBlocksG=2
 
 
-training 64_Kawung $model_hyperparameters_1 $model_state_1 2
-training 64_Parang $model_hyperparameters_1 $model_state_1 2
-training 64_Nitik $model_hyperparameters_1 $model_state_1 2
-training 64_Lereng $model_hyperparameters_1 $model_state_1 2
-training 64_Ceplok $model_hyperparameters_1 $model_state_1 2
+training 128_Kawung $model_hyperparameters_1 $model_state_1 2
+training 128_Parang $model_hyperparameters_1 $model_state_1 2
+training 128_Nitik $model_hyperparameters_1 $model_state_1 2
+training 128_Lereng $model_hyperparameters_1 $model_state_1 2
+training 128_Ceplok $model_hyperparameters_1 $model_state_1 2
 
 sudo poweroff
