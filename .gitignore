@@ -2,6 +2,5 @@ __pycache__
 .vscode
 *.pth
 test
-test.py
 .DS_STORE
 requirements.txt
