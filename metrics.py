@@ -123,6 +123,8 @@ def construct_fake_features():
 fake_features = construct_fake_features()
 # fake_features = np.load(fake_images_path / "fake_features.npy", allow_pickle=True)
 
+grid = vutils.make_grid(fake, 5)
+vutils.save_image(grid, fake_images_path / "generated_textures.jpg", normalize=True)
 
 #size=[num_real_samples, feature_dim]
 metrics = compute_prdc(real_features=real_features,
